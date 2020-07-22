@@ -166,6 +166,8 @@ QCCollection Statistics::mapping(const BedFile& bed_file, const QString& bam_fil
     int al_total = 0;
     int al_mapped = 0;
     int al_ontarget = 0;
+    int al_total_raw = 0;
+    int al_ontarget_raw = 0;
     int al_dup = 0;
     int al_proper_paired = 0;
     double bases_trimmed = 0;
@@ -174,8 +176,12 @@ QCCollection Statistics::mapping(const BedFile& bed_file, const QString& bam_fil
     double insert_size_sum = 0;
 	Histogram insert_dist(0, 999, 5);
     long long bases_usable = 0;
+	//usable bases by duplication level
+	QVector<long long> bases_usable_dp(5);
+	bases_usable_dp.fill(0);
     int max_length = 0;
     bool paired_end = false;
+    Histogram dp_dist(0.5, 4.5, 1);
 
     //iterate through all alignments
     BamAlignment al;
@@ -184,7 +190,11 @@ QCCollection Statistics::mapping(const BedFile& bed_file, const QString& bam_fil
 		//skip secondary alignments
 		if (al.isSecondaryAlignment()) continue;
 
+		//DP tag for UMI duplicates
+		int dp = al.tagi("DP");
+
         ++al_total;
+		al_total_raw += dp;
 		max_length = std::max(max_length, al.length());
 
         //insert size
@@ -225,13 +235,26 @@ QCCollection Statistics::mapping(const BedFile& bed_file, const QString& bam_fil
             {
                 ++al_ontarget;
 
+				if (dp != 0)
+				{
+					dp_dist.inc(std::min(dp, 4), true);
+					al_ontarget_raw += dp;
+				}
+
 				if (!al.isDuplicate() && al.mappingQuality()>=min_mapq)
-                {
+				{
+					//base-resolution coverage
                     foreach(int index, indices)
                     {
                         const int ol_start = std::max(bed_file[index].start(), start_pos);
                         const int ol_end = std::min(bed_file[index].end(), end_pos);
 						bases_usable += ol_end - ol_start + 1;
+						if (dp != 0)
+						{
+							bases_usable_dp[std::min(dp, 4)] += ol_end - ol_start + 1;
+							// save raw coverage
+							bases_usable_dp[0] += dp * (ol_end - ol_start + 1);
+						}
 						auto it = roi_cov[chr.num()].lowerBound(ol_start);
 						auto end = roi_cov[chr.num()].upperBound(ol_end);
 						while (it!=end)
@@ -289,6 +312,7 @@ QCCollection Statistics::mapping(const BedFile& bed_file, const QString& bam_fil
     output.insert(QCValue("clipped base percentage", 100.0 * bases_clipped / bases_mapped, "Percentage of the bases that are soft-clipped or hand-clipped during mapping.", "QC:2000052"));
     output.insert(QCValue("mapped read percentage", 100.0 * al_mapped / al_total, "Percentage of reads that could be mapped to the reference genome.", "QC:2000020"));
 	output.insert(QCValue("on-target read percentage", 100.0 * al_ontarget / al_total, "Percentage of reads that could be mapped to the target region.", "QC:2000021"));
+	output.insert(QCValue("on-target read percentage (raw)", 100.0 * al_ontarget_raw / al_total_raw, "Percentage of original reads that could be mapped to the target region.", "n/a"));
     if (paired_end)
     {
 		output.insert(QCValue("properly-paired read percentage", 100.0 * al_proper_paired / al_total, "Percentage of properly paired reads (for paired-end reads only).", "QC:2000022"));
@@ -309,6 +333,30 @@ QCCollection Statistics::mapping(const BedFile& bed_file, const QString& bam_fil
     }
     output.insert(QCValue("bases usable (MB)", (double)bases_usable / 1000000.0, "Bases sequenced that are usable for variant calling (in megabases).", "QC:2000050"));
     output.insert(QCValue("target region read depth", (double)bases_usable / roi_bases, "Average sequencing depth in target region.", "QC:2000025"));
+
+	QVector<double> cumsum_depth(5);
+	cumsum_depth.fill(0);
+	double cumsum_depth_running = 0;
+	for (int i=4; i>=0; --i)
+	{
+		cumsum_depth_running += (double)bases_usable_dp[i] / roi_bases;
+		cumsum_depth[i] = cumsum_depth_running;
+	}
+
+	for (int i=2; i<=4; ++i)
+	{
+		output.insert(QCValue("target region read depth, (min. " + QString::number(i) + "-fold duplication)",
+							  cumsum_depth[i],
+							  "Average coverage with at least " + QString::number(i) + "-fold duplication",
+							  //TODO accession
+							  "n/a"));
+	}
+
+		output.insert(QCValue("raw target region read depth",
+							  (double)bases_usable_dp[0] / roi_bases,
+							  "Raw average sequencing depth in target region.",
+							  //TODO accession
+							  "n/a"));
 
     QVector<int> depths;
     depths << 10 << 20 << 30 << 50 << 100 << 200 << 500;
@@ -344,6 +392,46 @@ QCCollection Statistics::mapping(const BedFile& bed_file, const QString& bam_fil
 		plotname = Helper::tempFileName(".png");
 		plot2.store(plotname);
 		output.insert(QCValue::Image("insert size distribution plot", plotname, "Insert size distribution plot.", "QC:2000038"));
+		QFile::remove(plotname);
+	}
+
+	//add fragment duplication distribution plot
+	if (dp_dist.binSum() != 0)
+	{
+		LinePlot plot3;
+		plot3.setXLabel("duplicates");
+		plot3.setYLabel("fragments [%]");
+		plot3.setYRange(0, 100);
+		plot3.setXValues(dp_dist.xCoords());
+		plot3.addLine(dp_dist.yCoords(true));
+
+		plotname = Helper::tempFileName(".png");
+		plot3.store(plotname);
+		//TODO accession
+		output.insert(QCValue::Image("fragment duplication distribution plot", plotname, "Fragment duplication distribution plot.", "n/a"));
+		QFile::remove(plotname);
+	}
+
+	//add duplication depth distribution plot
+	if (dp_dist.binSum() != 0)
+	{
+		LinePlot plot4;
+		plot4.setXLabel("minimum number of duplicates");
+		plot4.setYLabel("depth of coverage");
+		QVector<double> xvalues;
+		for (int i=1; i<=cumsum_depth.size()-1; ++i)
+		{
+			xvalues << i;
+		}
+
+		plot4.setXValues(xvalues);
+		cumsum_depth.pop_front();
+		plot4.addLine(cumsum_depth);
+
+		plotname = Helper::tempFileName(".png");
+		plot4.store(plotname);
+		//TODO accession
+		output.insert(QCValue::Image("duplication-coverage plot", plotname, "Coverge by duplication plot.", "n/a"));
 		QFile::remove(plotname);
 	}
 
