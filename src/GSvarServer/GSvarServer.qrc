@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/client/info.html</file>
+        <file>assets/client/api.json</file>
+        <file>assets/client/error.html</file>
+	<file>assets/ssl/dev-cert.crt</file>
+	<file>assets/ssl/dev-key.key</file>
+    </qresource>
+</RCC>
