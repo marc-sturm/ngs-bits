@@ -64,6 +64,9 @@ SOURCES += BedFile.cpp \
     ClinvarSubmissionGenerator.cpp \
     VcfFileHelper.cpp \
     VcfFile.cpp \
+    FileLocationProvider.cpp \
+    FileLocationProviderFileSystem.cpp \
+    FileLocationHelper.cpp \
     PhenotypeList.cpp \
     VariantScores.cpp \
     SomaticVariantInterpreter.cpp \
@@ -102,6 +105,9 @@ HEADERS += BedFile.h \
     ClinvarSubmissionGenerator.h \
     VcfFileHelper.h \
     VcfFile.h \
+    FileLocationProvider.h \
+    FileLocationProviderFileSystem.h \
+    FileLocationHelper.h \
     PhenotypeList.h \
     VariantScores.h \
     SomaticVariantInterpreter.h \

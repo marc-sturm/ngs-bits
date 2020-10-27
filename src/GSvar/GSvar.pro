@@ -87,9 +87,10 @@ SOURCES += main.cpp\
     SomaticDataTransferWidget.cpp \
     EvaluationSheetEditDialog.cpp \
     PublishedVariantsWidget.cpp \
-    PreferredTranscriptsWidget.cpp\
+    PreferredTranscriptsWidget.cpp \
+    GlobalServiceProvider.cpp \
     TumorOnlyReportWorker.cpp \
-    TumorOnlyReportDialog.cpp \
+    TumorOnlyReportDialog.cpp
     CfDNAPanelDesignDialog.cpp \
     DiseaseCourseWidget.cpp \
     CfDNAPanelWidget.cpp \

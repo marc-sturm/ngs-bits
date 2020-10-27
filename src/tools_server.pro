@@ -2,8 +2,9 @@ TEMPLATE = subdirs
 
 #Library targets and depdendencies
 SUBDIRS = cppCORE \
+        cppNGS \
         cppNGSD
 
 SUBDIRS += GSvarServer
-GSvarServer.depends = cppCORE
+GSvarServer.depends = cppCORE cppNGSD
 

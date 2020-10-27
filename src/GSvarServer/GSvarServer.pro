@@ -1,7 +1,9 @@
 QT += core
 QT += network
 QT -= gui
+QT += sql
 
+QTPLUGIN += QSQLMYSQL
 
 CONFIG += c++11 console
 CONFIG -= app_bundle
@@ -18,11 +20,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-        Api.cpp \
+        FileCache.cpp \
         HttpsServer.cpp \
         RequestHandler.cpp \
+        SessionManager.cpp \
         SslServer.cpp \
         WebEntity.cpp \
+        WorkerThread.cpp \
         main.cpp
 
 # Default rules for deployment.
@@ -31,17 +35,19 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    Api.h \
+    FileCache.h \
     HttpsServer.h \
     RequestHandler.h \
+    SessionManager.h \
     SslServer.h \
-    WebEntity.h
+    WebEntity.h \
+    WorkerThread.h
 
 include("../app_cli.pri")
 
-#include cppNGS library
-INCLUDEPATH += $$PWD/cppNGS
-LIBS += -L$$PWD/../bin -lcppNGS
+#include NGSD library
+INCLUDEPATH += $$PWD/../cppNGSD
+LIBS += -L$$PWD/../bin -lcppNGSD
 
 RESOURCES += \
     GSvarServer.qrc

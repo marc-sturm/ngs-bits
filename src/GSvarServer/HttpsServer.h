@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include "SslServer.h"
-#include "Api.h"
 
 class HttpsServer : public QObject
 {
@@ -17,8 +16,7 @@ protected slots:
     void handleConnection();
 
 private:
-	SslServer *server;
-	Api *api;
+	SslServer *server;	
 };
 
 #endif // HTTPSSERVER_H

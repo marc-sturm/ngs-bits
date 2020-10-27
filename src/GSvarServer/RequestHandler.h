@@ -3,38 +3,41 @@
 
 #include <QObject>
 #include <QTcpSocket>
-
 #include <QList>
-#include <QUuid>
+#include <QDebug>
+#include <QHostAddress>
+#include <QSslSocket>
 #include "WebEntity.h"
-#include "Api.h"
 #include "Exceptions.h"
+#include "NGSD.h"
+#include "Settings.h"
+#include "WorkerThread.h"
 
+
+Q_DECLARE_METATYPE(Response)
 
 class RequestHandler : public QObject
 {
     Q_OBJECT
 
 public:
-    enum State {
-		PROCESSING_REQUEST,
-		PROCESSING_HEADERS,
-		FINISHED
-    };
-
-	RequestHandler(QTcpSocket *socket, Api *api);
+	RequestHandler(QTcpSocket *socket);
 	~RequestHandler();
 
 private slots:
 	void dataReceived();
 
 private:
-    State state;
-	QTcpSocket *socket;
-	Api *api;
+	QTcpSocket *socket;	
 	Request::MethodType inferRequestMethod(QByteArray in);
 	void writeResponse(Response response);
-
+	bool hasEndOfLineCharsOnly(QByteArray line);
+	void handleResults(const Response &response);
+	QList<QByteArray> getRequestBody();
+	QList<QByteArray> getKeyValuePair(QByteArray in);
+	QMap<QString, QString> getVariables(QByteArray in);
+	QByteArray getVariableSequence(QByteArray url);
+	void processRequest(QList<QByteArray> body);
 };
 
 #endif // REQUESTHANDLER
