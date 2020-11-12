@@ -1,0 +1,21 @@
+#NGSD MySQL credentials
+ngsd_host = "localhost"
+ngsd_port = 3306
+ngsd_name = "database"
+ngsd_user = "username"
+ngsd_pass = "password"
+
+#Session settings
+session_duration = 100
+
+#File cache functionality
+cache_update_period = 10
+
+#Static content can be served from here
+server_root = ""
+sample_data = ""
+
+log_level = 3
+server_port = 8443
+ssl_certificate = ""
+ssl_key = ""

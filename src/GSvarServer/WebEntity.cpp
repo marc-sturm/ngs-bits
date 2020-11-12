@@ -4,30 +4,98 @@ WebEntity::WebEntity()
 {
 }
 
+WebEntity::~WebEntity()
+{
+}
+
 WebEntity& WebEntity::instance()
 {
 	static WebEntity web_entity;
 	return web_entity;
 }
 
-QString WebEntity::contentTypeToString(WebEntity::ContentType in)
+ContentType WebEntity::getContentTypeFromString(QString in)
+{
+	if (in.toLower() == "application/octet-stream") return APPLICATION_OCTET_STREAM;
+	if (in.toLower() == "application/json") return APPLICATION_JSON;
+	if (in.toLower() == "application/javascript") return APPLICATION_JAVASCRIPT;
+	if (in.toLower() == "image/jpeg") return IMAGE_JPEG;
+	if (in.toLower() == "image/png") return IMAGE_PNG;
+	if (in.toLower() == "image/svg+xml") return IMAGE_SVG_XML;
+	if (in.toLower() == "text/plain") return TEXT_PLAIN;
+	if (in.toLower() == "text/csv") return TEXT_CSV;
+	if (in.toLower() == "text/html") return TEXT_HTML;
+	if (in.toLower() == "text/xml") return TEXT_XML;
+	if (in.toLower() == "text/css") return TEXT_CSS;
+	if (in.toLower() == "multipart/form-data") return MULTIPART_FORM_DATA;
+
+	return APPLICATION_OCTET_STREAM;
+}
+
+Request::MethodType WebEntity::getMethodTypeFromString(QString in)
+{
+	if (in.toLower() == "get") return Request::MethodType::GET;
+	if (in.toLower() == "post") return Request::MethodType::POST;
+	if (in.toLower() == "delete") return Request::MethodType::DELETE;
+	if (in.toLower() == "put") return Request::MethodType::PUT;
+	if (in.toLower() == "patch") return Request::MethodType::PATCH;
+
+	return Request::MethodType::GET;
+}
+
+QString WebEntity::convertMethodTypeToString(Request::MethodType in)
+{
+	switch(in)
+	{
+		case Request::MethodType::GET: return "get";
+		case Request::MethodType::POST: return "post";
+		case Request::MethodType::DELETE: return "delete";
+		case Request::MethodType::PUT: return "put";
+		case Request::MethodType::PATCH: return "patch";
+		default: return "unknown";
+	}
+}
+
+QString WebEntity::convertContentTypeToString(ContentType in)
 {
 	switch(in)
 	{
 		case APPLICATION_OCTET_STREAM: return "application/octet-stream";
 		case APPLICATION_JSON: return "application/json";
+		case APPLICATION_JAVASCRIPT: return "application/javascript";
 		case IMAGE_JPEG: return "image/jpeg";
 		case IMAGE_PNG: return "image/png";
 		case IMAGE_SVG_XML: return "image/svg+xml";
 		case TEXT_PLAIN: return "text/plain";
 		case TEXT_CSV: return "text/csv";
 		case TEXT_HTML: return "text/html";
+		case TEXT_XML: return "text/xml";
+		case TEXT_CSS: return "text/css";
 		case MULTIPART_FORM_DATA: return "multipart/form-data";
 	}
 	return "";
 }
 
-QString WebEntity::folderItemIconToString(WebEntity::FolderItemIcon in)
+ContentType WebEntity::getContentTypeByFilename(QString filename)
+{
+	QList<QString> name_items = filename.split(".");
+	QString extention = name_items.takeLast().toLower();
+
+	if (extention == "json") return APPLICATION_JSON;
+	if (extention == "js") return APPLICATION_JAVASCRIPT;
+	if ((extention == "jpeg") || (extention == "jpg")) return IMAGE_JPEG;
+	if (extention == "png") return IMAGE_PNG;
+	if (extention == "svg") return IMAGE_SVG_XML;
+	if (extention == "txt") return TEXT_PLAIN;
+	if (extention == "csv") return TEXT_CSV;
+	if ((extention == "html") || (extention == "htm")) return TEXT_HTML;
+	if (extention == "xml") return TEXT_XML;
+	if (extention == "css") return TEXT_CSS;
+
+	return APPLICATION_OCTET_STREAM;
+}
+
+QString WebEntity::convertIconNameToString(FolderItemIcon in)
 {
 	switch(in)
 	{
@@ -43,7 +111,7 @@ QString WebEntity::folderItemIconToString(WebEntity::FolderItemIcon in)
 	return "";
 }
 
-QString WebEntity::errorTypeToText(WebEntity::ErrorType in)
+QString WebEntity::convertErrorTypeToText(ErrorType in)
 {
 	switch(in)
 	{
@@ -76,7 +144,7 @@ QString WebEntity::errorTypeToText(WebEntity::ErrorType in)
 	}
 }
 
-int WebEntity::errorCodeByType(WebEntity::ErrorType in)
+int WebEntity::getErrorCodeByType(ErrorType in)
 {
 	switch(in)
 	{
@@ -109,11 +177,6 @@ int WebEntity::errorCodeByType(WebEntity::ErrorType in)
 	}
 }
 
-QString WebEntity::generateToken()
-{
-	return QUuid::createUuid().toString(QUuid::WithoutBraces);
-}
-
 QString WebEntity::getPageHeader()
 {
 	QString output;
@@ -137,7 +200,17 @@ QString WebEntity::getPageHeader()
 	stream << "				* {\n";
 	stream << "					box-sizing: border-box;\n";
 	stream << "				}\n";
-	stream << "				.column {\n";
+	stream << "				.column-10 {\n";
+	stream << "					float: left;\n";
+	stream << "					width: 10%;\n";
+	stream << "					padding: 10px;\n";
+	stream << "				}\n";
+	stream << "				.column-25 {\n";
+	stream << "					float: left;\n";
+	stream << "					width: 25%;\n";
+	stream << "					padding: 10px;\n";
+	stream << "				}\n";
+	stream << "				.column-33 {\n";
 	stream << "					float: left;\n";
 	stream << "					width: 33.33%;\n";
 	stream << "					padding: 10px;\n";
@@ -198,6 +271,54 @@ QString WebEntity::getPageFooter()
 	stream << "		</body>\n";
 	stream << "</html>\n";
 	return output;
+}
+
+QString WebEntity::getApiHelpHeader(QString title)
+{
+	QString output;
+	QTextStream stream(&output);
+
+	stream << "			<h1>" << title << "</h1>\n";
+	stream << "			<div class=\"row\">\n";
+	stream << "				<div class=\"column-25\"><b>URL</b></div>\n";
+	stream << "				<div class=\"column-25\"><b>Method</b></div>\n";
+	stream << "				<div class=\"column-25\"><b>Parameters</b></div>\n";
+	stream << "				<div class=\"column-25\"><b>Description</b></div>\n";
+	stream << "			</div>\n";
+
+	return output;
+}
+
+QString WebEntity::getApiHelpEntiry(QString url, QString method, QList<QString> param_names, QList<QString> param_desc, QString comment)
+{
+	QString output;
+	QTextStream stream(&output);
+
+	stream << "			<div class=\"row\">\n";
+	stream << "				<div class=\"column-25\">" << url << "</div>\n";
+	stream << "				<div class=\"column-25\">" << method.toUpper() << "</div>\n";
+	stream << "				<div class=\"column-25\">\n";
+
+	for (int i = 0; i < param_names.count(); ++i)
+	{
+		stream << "				<b>" + param_names[i] + "</b> " + param_desc[i] + "<br />";
+	}
+
+	if (param_names.isEmpty())
+	{
+		stream << "				None";
+	}
+	stream << "				</div>\n";
+	stream << "				<div class=\"column-25\">" << comment << "</div>\n";
+	stream << "			</div>\n";
+
+	return output;
+}
+
+QString WebEntity::getUrlWithoutParams(QString url)
+{
+	QList<QString> url_parts = url.split('?');
+	return url_parts[0];
 }
 
 QString WebEntity::getErrorPageTemplate()
@@ -271,7 +392,7 @@ QString WebEntity::getFolderIcons()
 	return output;
 }
 
-WebEntity::FolderItemIcon WebEntity::getIconType(FolderItem item)
+FolderItemIcon WebEntity::getIconType(FolderItem item)
 {
 	if (item.is_folder) return FolderItemIcon::FOLDER;
 
@@ -288,31 +409,55 @@ WebEntity::FolderItemIcon WebEntity::getIconType(FolderItem item)
 	return FolderItemIcon::GENERIC_FILE;
 }
 
-QString WebEntity::createFolderItemLink(QString name, QString url, WebEntity::FolderItemIcon type)
+QString WebEntity::createFolderItemLink(QString name, QString url, FolderItemIcon type)
 {
-	return "<a class=\"file-list\" href=\"" +url + "\"><svg class=\"file-list\" width=\"2em\" height=\"2em\"><use xlink:href=\"#" + folderItemIconToString(type) + "\" /></svg> <span>" + name + "</span></a>";
+	return "<a class=\"file-list\" href=\"" +url + "\"><svg class=\"file-list\" width=\"2em\" height=\"2em\"><use xlink:href=\"#" + convertIconNameToString(type) + "\" /></svg> <span>" + name + "</span></a>";
 }
 
-Response WebEntity::createError(WebEntity::ErrorType type, QString message)
+Response WebEntity::createError(ErrorType error_type, ContentType content_type, QString message)
 {
 	qDebug() << "An error has been detected:" << message;
 
 	QByteArray headers {};
-	QString caption = errorTypeToText(type);
-	QString body = getErrorPageTemplate();
+	QByteArray body {};
 
 	if (message.isEmpty())
 	{
 		message	= "No information provided";
 	}
-	body.replace("%TITLE%", "Error " + QString::number(errorCodeByType(type)) + " - " + errorTypeToText(type));
-	body.replace("%MESSAGE%", message);
 
-	headers.append("HTTP/1.1 " + QString::number(errorCodeByType(type)) + " FAIL\n");
+	switch (content_type)
+	{
+		case ContentType::TEXT_HTML:
+			{
+				QString html_body = getErrorPageTemplate();
+				html_body.replace("%TITLE%", "Error " + QString::number(getErrorCodeByType(error_type)) + " - " + convertErrorTypeToText(error_type));
+				html_body.replace("%MESSAGE%", message);
+				body = html_body.toLocal8Bit();
+			}
+			break;
+		case ContentType::APPLICATION_JSON:
+			{
+				QJsonDocument json_doc_output {};
+				QJsonObject json_object {};
+				json_object.insert("message", message);
+				json_object.insert("code", getErrorCodeByType(error_type));
+				json_object.insert("type", convertErrorTypeToText(error_type));
+
+				json_doc_output.setObject(json_object);
+				body = json_doc_output.toJson();
+			}
+			break;
+		default:
+			body = {};
+	}
+
+	headers.append("HTTP/1.1 " + QString::number(getErrorCodeByType(error_type)) + " FAIL\n");
 	headers.append("Content-Length: " + QString::number(body.length()) + "\n");
+	headers.append("Content-Type: " + WebEntity::convertContentTypeToString(content_type) + "\n");
 	headers.append("\n");
 
-	return Response{headers, body.toLocal8Bit()};
+	return Response{headers, body};
 }
 
 Response WebEntity::cretateFolderListing(QList<FolderItem> in)
@@ -327,17 +472,17 @@ Response WebEntity::cretateFolderListing(QList<FolderItem> in)
 
 	stream << "			<h1>" << folder_name << "</h1><br />\n";
 	stream << "			<div class=\"row\">\n";
-	stream << "				<div class=\"column\">" << createFolderItemLink("to the parent folder", "", FolderItemIcon::TO_PARENT_FOLDER) << "</div>\n";
-	stream << "				<div class=\"column\"><b>Size</b></div>\n";
-	stream << "				<div class=\"column\"><b>Modified</b></div>\n";
+	stream << "				<div class=\"column-33\">" << createFolderItemLink("to the parent folder", "", FolderItemIcon::TO_PARENT_FOLDER) << "</div>\n";
+	stream << "				<div class=\"column-33\"><b>Size</b></div>\n";
+	stream << "				<div class=\"column-33\"><b>Modified</b></div>\n";
 	stream << "			</div>\n";
 
 	for (int i = 0; i < in.count(); ++i)
 	{
 		stream << "			<div class=\"row\">\n";
-		stream << "				<div class=\"column\">" << createFolderItemLink(in[i].name, "", getIconType(in[i])) << "</div>\n";
-		stream << "				<div class=\"column\">" << in[i].size << "</div>\n";
-		stream << "				<div class=\"column\">" << in[i].modified.toString() << "</div>\n";
+		stream << "				<div class=\"column-33\">" << createFolderItemLink(in[i].name, "", getIconType(in[i])) << "</div>\n";
+		stream << "				<div class=\"column-33\">" << in[i].size << "</div>\n";
+		stream << "				<div class=\"column-33\">" << in[i].modified.toString() << "</div>\n";
 		stream << "			</div>\n";
 	}
 
@@ -350,7 +495,7 @@ Response WebEntity::cretateFolderListing(QList<FolderItem> in)
 	QByteArray headers {};
 	headers.append("HTTP/1.1 200 OK\n");
 	headers.append("Content-Length: " + QString::number(output.length()) + "\n");
-	headers.append("Content-Type: " + WebEntity::contentTypeToString(ContentType::TEXT_HTML) + "\n");
+	headers.append("Content-Type: " + WebEntity::convertContentTypeToString(ContentType::TEXT_HTML) + "\n");
 	headers.append("\n");
 
 	return Response{headers, output.toLocal8Bit()};

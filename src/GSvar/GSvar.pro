@@ -90,7 +90,7 @@ SOURCES += main.cpp\
     PreferredTranscriptsWidget.cpp \
     GlobalServiceProvider.cpp \
     TumorOnlyReportWorker.cpp \
-    TumorOnlyReportDialog.cpp
+    TumorOnlyReportDialog.cpp \
     CfDNAPanelDesignDialog.cpp \
     DiseaseCourseWidget.cpp \
     CfDNAPanelWidget.cpp \
@@ -179,6 +179,7 @@ HEADERS += MainWindow.h \
     EvaluationSheetEditDialog.h \
     PublishedVariantsWidget.h \
     PreferredTranscriptsWidget.h \
+    GlobalServiceProvider.h \
     TumorOnlyReportWorker.h \
     TumorOnlyReportDialog.h \
     CfDNAPanelDesignDialog.h \

@@ -1,0 +1,28 @@
+#ifndef WORKERTHREAD_H
+#define WORKERTHREAD_H
+
+#include <QThread>
+#include <QFile>
+#include <QDebug>
+#include <QDir>
+#include "WebEntity.h"
+#include "EndpointManager.h"
+
+class WorkerThread : public QThread
+{
+	Q_OBJECT
+public:
+	explicit WorkerThread(Request request);
+	void run();
+
+private:
+	QString findSampleById(QString folder, QString id);
+	void processRequest();
+	Response (*endpoint_action_)(Request request);
+	Request request_;
+
+signals:
+	void resultReady(const Response &response);
+};
+
+#endif // WORKERTHREAD_H

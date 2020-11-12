@@ -68,7 +68,8 @@ HEADERS += \
     VariantScores_Test.h \
     BamWriter_Test.h \
     SomaticVariantInterpreter_Test.h \
-    FileLocationHelper_Test.h
+    FileLocationHelper_Test.h \
+    FileLocationProvider_Test.h
 
 SOURCES += \
         main.cpp

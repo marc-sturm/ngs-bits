@@ -13,12 +13,12 @@
 #include "ReportSettings.h"
 #include "DelayedInitializationTimer.h"
 #include "SomaticReportSettings.h"
-struct IgvFile
-{
-	QString id; //sample identifier/name (for visualization)
-	QString type; //file type (for grouping)
-	QString filename; //file name
-};
+
+#include "GlobalServiceProvider.h"
+#include "FileLocationProviderFileSystem.h"
+#include "FileLocationProviderServer.h"
+
+
 
 ///Main window class
 class MainWindow
@@ -400,6 +400,7 @@ private:
 	QLabel* notification_label_;
 
 	//DATA
+	bool is_local_project_;
 	QString filename_;
 	FileWatcher filewatcher_;
 	bool igv_initialized_;

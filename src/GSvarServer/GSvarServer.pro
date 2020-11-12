@@ -20,12 +20,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+        EndpointHandler.cpp \
+        EndpointManager.cpp \
         FileCache.cpp \
         HttpsServer.cpp \
         RequestHandler.cpp \
+        ServerHelper.cpp \
         SessionManager.cpp \
         SslServer.cpp \
         WebEntity.cpp \
+        WebExceptions.cpp \
         WorkerThread.cpp \
         main.cpp
 
@@ -35,12 +39,16 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    EndpointHandler.h \
+    EndpointManager.h \
     FileCache.h \
     HttpsServer.h \
     RequestHandler.h \
+    ServerHelper.h \
     SessionManager.h \
     SslServer.h \
     WebEntity.h \
+    WebExceptions.h \
     WorkerThread.h
 
 include("../app_cli.pri")

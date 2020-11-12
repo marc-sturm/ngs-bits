@@ -1,0 +1,4 @@
+#ifndef ENDPOINTINDEX_H
+#define ENDPOINTINDEX_H
+
+#endif // ENDPOINTINDEX_H

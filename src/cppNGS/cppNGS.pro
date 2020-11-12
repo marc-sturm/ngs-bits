@@ -38,6 +38,7 @@ QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN\'"
 
 SOURCES += BedFile.cpp \
     Chromosome.cpp \
+    FileLocationProviderServer.cpp \
     VariantList.cpp \
     Statistics.cpp \
     Pileup.cpp \
@@ -63,8 +64,7 @@ SOURCES += BedFile.cpp \
     MidCheck.cpp \
     ClinvarSubmissionGenerator.cpp \
     VcfFileHelper.cpp \
-    VcfFile.cpp \
-    FileLocationProvider.cpp \
+    VcfFile.cpp \    
     FileLocationProviderFileSystem.cpp \
     FileLocationHelper.cpp \
     PhenotypeList.cpp \
@@ -76,6 +76,7 @@ SOURCES += BedFile.cpp \
 
 HEADERS += BedFile.h \
     Chromosome.h \
+    FileLocationProviderServer.h \
     VariantList.h \
     ChromosomalIndex.h \
     Statistics.h \

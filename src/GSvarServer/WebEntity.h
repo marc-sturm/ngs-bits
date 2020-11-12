@@ -2,9 +2,67 @@
 #define REQUESTENTITY_H
 
 #include <QMap>
-#include <QUuid>
 #include <QDebug>
 #include <QDateTime>
+#include <QJsonDocument>
+#include <QJsonObject>
+
+typedef enum
+{
+	APPLICATION_OCTET_STREAM,
+	APPLICATION_JSON,
+	APPLICATION_JAVASCRIPT,
+	IMAGE_JPEG,
+	IMAGE_PNG,
+	IMAGE_SVG_XML,
+	TEXT_PLAIN,
+	TEXT_CSV,
+	TEXT_HTML,
+	TEXT_XML,
+	TEXT_CSS,
+	MULTIPART_FORM_DATA
+} ContentType;
+
+typedef enum
+{
+	TO_PARENT_FOLDER,
+	GENERIC_FILE,
+	BINARY_FILE,
+	CODE_FILE,
+	PICTURE_FILE,
+	TEXT_FILE,
+	TABLE_FILE,
+	FOLDER
+} FolderItemIcon;
+
+typedef enum
+{
+	BAD_REQUEST,
+	UNAUTHORIZED,
+	PAYMENT_REQUIRED,
+	FORBIDDEN,
+	NOT_FOUND,
+	METHOD_NOT_ALLOWED,
+	NOT_ACCEPTABLE,
+	PROXY_AUTH_REQUIRED,
+	REQUEST_TIMEOUT,
+	CONFLICT,
+	GONE,
+	LENGTH_REQUIRED,
+	PRECONDITION_FAILED,
+	ENTITY_TOO_LARGE,
+	URI_TOO_LONG,
+	UNSUPPORTED_MEDIA_TYPE,
+	RANGE_NOT_SATISFIABLE,
+	EXPECTATION_FAILED,
+	INTERNAL_SERVER_ERROR,
+	NOT_IMPLEMENTED,
+	BAD_GATEWAY,
+	SERVICE_UNAVAILABLE,
+	GATEWAY_TIMEOUT,
+	VERSION_NOT_SUPPORTED,
+	UNKNOWN_ERROR
+} ErrorType;
 
 struct Request
 {
@@ -17,11 +75,14 @@ struct Request
 		PATCH
 	};
 	MethodType method;
+	ContentType return_type;
 	QMap<QString, QString> headers;
-	QByteArray path;
+	QString prefix;
+	QString path;
 	QString remote_address;
 	QMap<QString, QString> url_params;
 	QMap<QString, QString> form_urlencoded;
+	QList<QString> path_params;
 };
 
 struct Response
@@ -41,75 +102,33 @@ struct FolderItem
 class WebEntity
 {
 public:
-	enum ContentType
-	{
-		APPLICATION_OCTET_STREAM,
-		APPLICATION_JSON,
-		IMAGE_JPEG,
-		IMAGE_PNG,
-		IMAGE_SVG_XML,
-		TEXT_PLAIN,
-		TEXT_CSV,
-		TEXT_HTML,
-		MULTIPART_FORM_DATA
-	};
+	static ContentType getContentTypeFromString(QString in);
+	static Request::MethodType getMethodTypeFromString(QString in);
+	static QString convertMethodTypeToString(Request::MethodType in);
 
-	enum FolderItemIcon
-	{
-		TO_PARENT_FOLDER,
-		GENERIC_FILE,
-		BINARY_FILE,
-		CODE_FILE,
-		PICTURE_FILE,
-		TEXT_FILE,
-		TABLE_FILE,
-		FOLDER
-	};
-
-	enum ErrorType
-	{
-		BAD_REQUEST,
-		UNAUTHORIZED,
-		PAYMENT_REQUIRED,
-		FORBIDDEN,
-		NOT_FOUND,
-		METHOD_NOT_ALLOWED,
-		NOT_ACCEPTABLE,
-		PROXY_AUTH_REQUIRED,
-		REQUEST_TIMEOUT,
-		CONFLICT,
-		GONE,
-		LENGTH_REQUIRED,
-		PRECONDITION_FAILED,
-		ENTITY_TOO_LARGE,
-		URI_TOO_LONG,
-		UNSUPPORTED_MEDIA_TYPE,
-		RANGE_NOT_SATISFIABLE,
-		EXPECTATION_FAILED,
-		INTERNAL_SERVER_ERROR,
-		NOT_IMPLEMENTED,
-		BAD_GATEWAY,
-		SERVICE_UNAVAILABLE,
-		GATEWAY_TIMEOUT,
-		VERSION_NOT_SUPPORTED,
-		UNKNOWN_ERROR
-	};
-
-
-
-	static QString contentTypeToString(WebEntity::ContentType in);
-	static QString folderItemIconToString(WebEntity::FolderItemIcon in);
-	static QString errorTypeToText(WebEntity::ErrorType in);
-	static int errorCodeByType(WebEntity::ErrorType in);
-	static QString generateToken();
+	static QString convertContentTypeToString(ContentType in);
+	static ContentType getContentTypeByFilename(QString filename);
+	static QString convertIconNameToString(FolderItemIcon in);
+	static QString convertErrorTypeToText(ErrorType in);
+	static int getErrorCodeByType(ErrorType in);
 
 	static QString getErrorPageTemplate();
-	static Response createError(WebEntity::ErrorType type, QString message);
+	static Response createError(ErrorType error_type, ContentType content_type, QString message);
 	static Response cretateFolderListing(QList<FolderItem> in);
 
+	static QString getPageHeader();
+	static QString getPageFooter();
 
-private:
+	static QString getApiHelpHeader(QString title);
+	static QString getApiHelpEntiry(QString url, QString method, QList<QString> param_names, QList<QString> param_desc, QString comment);
+
+	static QString getUrlWithoutParams(QString url);
+
+protected:
 	WebEntity();
+	~WebEntity();
+
+private:	
 	static WebEntity& instance();
 
 	const QList<QString> BINARY_EXT = {"bam", "exe"};
@@ -118,11 +137,9 @@ private:
 	const QList<QString> TEXT_EXT = {"txt", "ini", "rtf", "doc", "docx"};
 	const QList<QString> TABLE_EXT = {"csv", "xls", "xlsx"};
 
-	static QString getPageHeader();
-	static QString getPageFooter();
 	static QString getFolderIcons();
 	static FolderItemIcon getIconType(FolderItem item);
-	static QString createFolderItemLink(QString name, QString url, WebEntity::FolderItemIcon type);
+	static QString createFolderItemLink(QString name, QString url, FolderItemIcon type);
 };
 
 #endif // WEBENTITY_H

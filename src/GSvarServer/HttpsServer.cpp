@@ -11,17 +11,29 @@
 
 HttpsServer::HttpsServer(quint16 port)
 {
-	QFile certFile(":/assets/ssl/dev-cert.crt");
+	QString ssl_certificate = ServerHelper::getStringSettingsValue("ssl_certificate");
+	if (ssl_certificate.isEmpty())
+	{
+		qFatal("SSL certificate has not been specified in the config");
+	}
+
+	QFile certFile(ssl_certificate);
 	if (!certFile.open(QIODevice::ReadOnly))
 	{
-        qDebug() << "Unable to load certificate";
+		qFatal("Unable to load SSL certificate");
         return;
     }
 
-	QFile keyFile(":/assets/ssl/dev-key.key");
+	QString ssl_key = ServerHelper::getStringSettingsValue("ssl_key");
+	if (ssl_key.isEmpty())
+	{
+		qFatal("SSL key has not been specified in the config");
+	}
+
+	QFile keyFile(ssl_key);
 	if (!keyFile.open(QIODevice::ReadOnly))
 	{
-        qDebug() << "Unable to load key";
+		qFatal("Unable to load SSL key");
         return;
     }
 
@@ -37,11 +49,11 @@ HttpsServer::HttpsServer(quint16 port)
     server->setSslConfiguration(config);
 	if (server->listen(QHostAddress::Any, port))
 	{
-		qDebug() << "HTTPS server is running on port #" << port;		
+		qInfo() << "HTTPS server is running on port #" << port;
 	}
 	else
 	{
-		qDebug() << "Could not start the HTTPS server on port #" << port << ":" << server->serverError();
+		qCritical() << "Could not start the HTTPS server on port #" << port << ":" << server->serverError();
 	}	
 }
 
@@ -55,5 +67,5 @@ void HttpsServer::handleConnection()
 	{
         QSslSocket *sock = server->nextPendingConnection();
 		RequestHandler *handler = new RequestHandler(sock);
-    }
+	}
 }

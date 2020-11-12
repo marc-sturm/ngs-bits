@@ -53,7 +53,7 @@ QList<QByteArray> RequestHandler::getRequestBody()
 	}
 	else if (socket->bytesAvailable() > MAX_REQUEST_LENGTH)
 	{
-		writeResponse(WebEntity::createError(WebEntity::BAD_REQUEST, "Maximum request lenght has been exceeded"));
+                writeResponse(WebEntity::createError(ErrorType::BAD_REQUEST, ContentType::TEXT_HTML, "Maximum request lenght has been exceeded"));
 	}
 
 	return request_items;
@@ -96,7 +96,41 @@ QByteArray RequestHandler::getVariableSequence(QByteArray url)
 	return url.split('?')[1];
 }
 
-void RequestHandler::processRequest(QList<QByteArray> body)
+QString RequestHandler::getRequestPrefix(QList<QString> path_items)
+{
+	if (path_items.count()>1)
+	{
+		return WebEntity::getUrlWithoutParams(path_items[1]);
+	}
+	return "";
+}
+
+QString RequestHandler::getRequestPath(QList<QString> path_items)
+{
+	if (path_items.count()>2)
+	{		
+		return WebEntity::getUrlWithoutParams(path_items[2]);
+	}
+	return "";
+}
+
+QList<QString> RequestHandler::getRequestPathParams(QList<QString> path_items)
+{
+	QList<QString> params {};
+	if (path_items.count()>3)
+	{
+		for (int p = 3; p < path_items.count(); ++p)
+		{
+			if (!path_items[p].trimmed().isEmpty())
+			{
+				params.append(path_items[p].trimmed());
+			}
+		}
+	}
+	return params;
+}
+
+void RequestHandler::parseRequest(QList<QByteArray> body)
 {
 	Request request {};
 	request.remote_address = socket->peerAddress().toString();
@@ -109,7 +143,7 @@ void RequestHandler::processRequest(QList<QByteArray> body)
 			QList<QByteArray> request_info = body[i].split(' ');
 			if (request_info.length() < 2)
 			{
-				writeResponse(WebEntity::createError(WebEntity::BAD_REQUEST, "Cannot process the request. It is possible a URL is missing or incorrect"));
+                                writeResponse(WebEntity::createError(ErrorType::BAD_REQUEST, ContentType::TEXT_HTML, "Cannot process the request. It is possible a URL is missing or incorrect"));
 				return;
 			}
 			try
@@ -118,10 +152,18 @@ void RequestHandler::processRequest(QList<QByteArray> body)
 			}
 			catch (ArgumentException& e)
 			{
-				writeResponse(WebEntity::createError(WebEntity::BAD_REQUEST, e.message()));
+                                writeResponse(WebEntity::createError(ErrorType::BAD_REQUEST, ContentType::TEXT_HTML, e.message()));
 				return;
 			}
-			request.path = request_info[1];
+
+
+			QList<QString> path_items = QString(request_info[1]).split('/');
+
+			request.prefix = getRequestPrefix(path_items);
+			request.path = getRequestPath(path_items);
+			request.path_params = getRequestPathParams(path_items);
+
+			qDebug() << request.path_params;
 			request.url_params = getVariables(getVariableSequence(request_info[1]));
 			continue;
 		}
@@ -131,7 +173,7 @@ void RequestHandler::processRequest(QList<QByteArray> body)
 		int param_separator = body[i].indexOf('=');
 		if ((header_separator == -1) && (param_separator == -1) && (body[i].length() > 0))
 		{
-			writeResponse(WebEntity::createError(WebEntity::BAD_REQUEST, "Malformed element: " + body[i]));
+                        writeResponse(WebEntity::createError(ErrorType::BAD_REQUEST, ContentType::TEXT_HTML, "Malformed element: " + body[i]));
 			return;
 		}
 
@@ -144,6 +186,16 @@ void RequestHandler::processRequest(QList<QByteArray> body)
 			request.form_urlencoded = getVariables(body[i]);
 		}
 	}
+
+        request.return_type = ContentType::TEXT_HTML;
+        if (request.headers.contains("accept"))
+        {
+            if (WebEntity::getContentTypeFromString(request.headers["accept"]) == ContentType::APPLICATION_JSON)
+            {
+                request.return_type = ContentType::APPLICATION_JSON;
+            }
+        }
+
 
 	qDebug() << "Request headers";
 	QMap<QString, QString>::const_iterator i = request.headers.constBegin();
@@ -164,9 +216,8 @@ void RequestHandler::processRequest(QList<QByteArray> body)
 }
 
 void RequestHandler::dataReceived()
-{
-	qDebug() << "New request received";	
-	processRequest(getRequestBody());
+{	
+	parseRequest(getRequestBody());
 }
 
 void RequestHandler::writeResponse(Response response)
