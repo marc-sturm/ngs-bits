@@ -1,14 +1,17 @@
 #ifndef SERVERHELPER_H
 #define SERVERHELPER_H
 
+#include "cppREST_global.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QDebug>
 #include <QUuid>
 #include "Exceptions.h"
 #include "Settings.h"
+#include "WebEntity.h"
 
-class ServerHelper
+
+class CPPRESTSHARED_EXPORT ServerHelper
 {
 public:
 	static QString getAppName();

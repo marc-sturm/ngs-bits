@@ -1,6 +1,7 @@
 #ifndef REQUESTENTITY_H
 #define REQUESTENTITY_H
 
+#include "cppREST_global.h"
 #include <QMap>
 #include <QDebug>
 #include <QDateTime>
@@ -64,7 +65,7 @@ typedef enum
 	UNKNOWN_ERROR
 } ErrorType;
 
-struct Request
+struct CPPRESTSHARED_EXPORT Request
 {
 	enum MethodType
 	{
@@ -85,13 +86,13 @@ struct Request
 	QList<QString> path_params;
 };
 
-struct Response
+struct CPPRESTSHARED_EXPORT Response
 {
 	QByteArray headers;
 	QByteArray body;
 };
 
-struct FolderItem
+struct CPPRESTSHARED_EXPORT FolderItem
 {
 	QString name;
 	bool is_folder;
@@ -99,7 +100,7 @@ struct FolderItem
 	QDateTime modified;
 };
 
-class WebEntity
+class CPPRESTSHARED_EXPORT WebEntity
 {
 public:
 	static ContentType getContentTypeFromString(QString in);

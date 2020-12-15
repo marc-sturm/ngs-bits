@@ -8,120 +8,6 @@ EndpointHandler::~EndpointHandler()
 {
 }
 
-bool EndpointHandler::isEligibileToAccess(Request request)
-{
-	if ((!request.form_urlencoded.contains("token")) && (!request.url_params.contains("token")))
-	{
-		return false;
-	}
-	if ((!SessionManager::isTokenValid(request.form_urlencoded["token"])) && (!SessionManager::isTokenValid(request.url_params["token"])))
-	{
-		return false;
-	}
-	return true;
-}
-
-QString EndpointHandler::getFileNameWithExtension(QString filename_with_path)
-{
-	QList<QString> path_items = filename_with_path.split('/');
-	return path_items.takeLast();
-}
-
-QByteArray EndpointHandler::readFileContent(QString filename)
-{
-	qDebug() << "Reading file:" << filename;
-	QByteArray content {};
-
-	QString found_id = FileCache::getFileIdIfInCache(filename);
-	if (found_id.length() > 0)
-	{
-		qDebug() << "File has been found in the cache:" << found_id;
-		return FileCache::getFileById(found_id).content;
-	}
-
-
-	QFile file(filename);
-	if (!file.open(QIODevice::ReadOnly))
-	{
-		THROW(FileAccessException, "File could not be found: " + filename);
-	}
-
-	if (!file.atEnd())
-	{
-		content = file.readAll();
-	}
-
-	qDebug() << "Adding file to the cache:" << filename;
-	FileCache::addFileToCache(ServerHelper::generateUniqueStr(), filename, content);
-	return content;
-}
-
-Response EndpointHandler::serveStaticFile(QString filename, ContentType type, bool is_downloadable)
-{
-	QByteArray body {};
-	try
-	{
-		body = readFileContent(filename);
-	}
-	catch(Exception& e)
-	{
-		return WebEntity::createError(ErrorType::INTERNAL_SERVER_ERROR, ContentType::TEXT_HTML, e.message());
-	}
-
-	return (Response{generateHeaders(getFileNameWithExtension(filename), body.length(), type, is_downloadable), body});
-}
-
-Response EndpointHandler::serveFolderContent(QString folder)
-{
-	QDir dir(folder);
-	if (!dir.exists())
-	{
-		return WebEntity::createError(ErrorType::INTERNAL_SERVER_ERROR, ContentType::TEXT_HTML, "Requested folder does not exist");
-	}
-
-	dir.setFilter(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoSymLinks);
-
-	QFileInfoList list = dir.entryInfoList();
-	QList<FolderItem> files {};
-	for (int i = 0; i < list.size(); ++i) {
-		QFileInfo fileInfo = list.at(i);
-		if ((fileInfo.fileName() == ".") || (fileInfo.fileName() == "..")) continue;
-
-		FolderItem current_item;
-		current_item.name = fileInfo.fileName();
-		current_item.size = fileInfo.size();
-		current_item.modified = fileInfo.metadataChangeTime();
-		current_item.is_folder = fileInfo.isDir() ? true : false;
-		files.append(current_item);
-		qDebug() << "File:" << fileInfo.fileName() << ", " << fileInfo.size() << fileInfo.isDir();
-
-	}
-	return WebEntity::cretateFolderListing(files);
-}
-
-QByteArray EndpointHandler::generateHeaders(QString filename, int length, ContentType type, bool is_downloadable)
-{
-	QByteArray headers {};
-	headers.append("HTTP/1.1 200 OK\n");
-	headers.append("Connection: Keep-Alive\n");
-	headers.append("Keep-Alive: timeout=5, max=1000\n");
-	headers.append("Content-Length: " + QString::number(length) + "\n");
-	headers.append("Content-Type: " + WebEntity::convertContentTypeToString(type) + "\n");
-	if (is_downloadable)
-	{
-		headers.append("Content-Disposition: form-data; name=file_download; filename=" + filename + "\n");
-	}
-
-	headers.append("\n");
-
-	return headers;
-}
-
-QByteArray EndpointHandler::generateHeaders(int length, ContentType type)
-{
-	return generateHeaders("", length, type, false);
-}
-
 bool EndpointHandler::isValidUser(QString name, QString password)
 {
 	try
@@ -153,8 +39,7 @@ QString EndpointHandler::getGSvarFile(QString sample_name, bool search_multi)
 	{
 		//convert name to file
 		NGSD db;
-		QString processed_sample_id = db.processedSampleId(sample_name);
-		QString project_folder = db.processedSamplePath(processed_sample_id, PathType::PROJECT_FOLDER);
+		QString processed_sample_id = db.processedSampleId(sample_name);		
 		file = db.processedSamplePath(processed_sample_id, PathType::GSVAR);
 
 		//determine all analyses of the sample
@@ -165,34 +50,13 @@ QString EndpointHandler::getGSvarFile(QString sample_name, bool search_multi)
 		QString normal_sample = db.normalSample(processed_sample_id);
 		if (normal_sample!="")
 		{
-			QString gsvar_somatic = project_folder + "/" + "Somatic_" + sample_name + "-" + normal_sample + "/" + sample_name + "-" + normal_sample + ".GSvar";
-			if (QFile::exists(gsvar_somatic))
-			{
-				analyses << gsvar_somatic;
-			}
+			analyses << db.secondaryAnalyses(sample_name + "-" + normal_sample, "somatic", true);
 		}
 		//check for germline trio/multi analyses
 		else if (search_multi)
 		{
-			QStringList trio_folders = Helper::findFolders(project_folder, "Trio_*"+sample_name+"*", false);
-			foreach(QString trio_folder, trio_folders)
-			{
-				QString filename = trio_folder + "/trio.GSvar";
-				if (QFile::exists(filename))
-				{
-					analyses << filename;
-				}
-			}
-
-			QStringList multi_folders = Helper::findFolders(project_folder, "Multi_*"+sample_name+"*", false);
-			foreach(QString multi_folder, multi_folders)
-			{
-				QString filename = multi_folder + "/multi.GSvar";
-				if (QFile::exists(filename))
-				{
-					analyses << filename;
-				}
-			}
+			analyses << db.secondaryAnalyses(sample_name, "trio", true);
+			analyses << db.secondaryAnalyses(sample_name, "multi sample", true);
 		}
 
 		//determine analysis to load
@@ -226,19 +90,13 @@ QString EndpointHandler::getGSvarFile(QString sample_name, bool search_multi)
 Response EndpointHandler::serveIndexPage(Request request)
 {
 	qInfo() << "Index page has been requested: " << request.remote_address;
-	return serveStaticFile(":/assets/client/info.html", ContentType::TEXT_HTML, false);
+	return EndpointHelper::serveStaticFile(":/assets/client/info.html", ContentType::TEXT_HTML, false);
 }
 
 Response EndpointHandler::serveApiInfo(Request request)
 {
 	qInfo() << "API information has been requested: " << request.remote_address;
-	return serveStaticFile(":/assets/client/api.json", ContentType::APPLICATION_JSON, false);
-}
-
-Response EndpointHandler::listFolderContent(Request request)
-{
-	qInfo() << "List folder content: " << request.remote_address;
-	return serveFolderContent("./");
+	return EndpointHelper::serveStaticFile(":/assets/client/api.json", ContentType::APPLICATION_JSON, false);
 }
 
 Response EndpointHandler::locateFileByType(Request request)
@@ -300,38 +158,7 @@ Response EndpointHandler::locateFileByType(Request request)
 	}
 
 	json_doc_output.setArray(json_list_output);
-	return Response{generateHeaders(json_doc_output.toJson().length(), ContentType::APPLICATION_JSON), json_doc_output.toJson()};
-}
-
-Response EndpointHandler::serveEndpointHelp(Request request)
-{
-	qInfo() << "API help page has been requested: " << request.remote_address;
-	QByteArray body {};
-	if (request.path_params.count() == 0)
-	{
-		body = EndpointManager::generateGlobalHelp().toLocal8Bit();
-	}
-	else
-	{
-		body = EndpointManager::generateEntityHelp(request.path_params[0], request.method).toLocal8Bit();
-	}
-	return Response{generateHeaders(body.length(), ContentType::TEXT_HTML), body};
-}
-
-Response EndpointHandler::serveStaticFile(Request request)
-{
-	qDebug() << "Accessing static content";
-	QString path = ServerHelper::getStringSettingsValue("server_root");
-	path = WebEntity::getUrlWithoutParams(path.trimmed() + request.path_params[0]);
-	return serveStaticFile(path, WebEntity::getContentTypeByFilename(path), false);
-
-}
-
-Response EndpointHandler::serveProtectedStaticFile(Request request)
-{
-	if (!isEligibileToAccess(request)) return WebEntity::createError(ErrorType::FORBIDDEN, request.return_type, "Secure token has not been provided");
-
-	return serveStaticFile(":/assets/client/example.png", ContentType::APPLICATION_OCTET_STREAM, true);
+	return Response{EndpointHelper::generateHeaders(json_doc_output.toJson().length(), ContentType::APPLICATION_JSON), json_doc_output.toJson()};
 }
 
 Response EndpointHandler::performLogin(Request request)
@@ -349,7 +176,7 @@ Response EndpointHandler::performLogin(Request request)
 
 		SessionManager::addNewSession(secure_token, cur_session);
 		body = secure_token.toLocal8Bit();
-		return Response{generateHeaders(body.length(), ContentType::TEXT_PLAIN), body};
+		return Response{EndpointHelper::generateHeaders(body.length(), ContentType::TEXT_PLAIN), body};
 	}
 
 	return WebEntity::createError(ErrorType::UNAUTHORIZED, request.return_type, "Invalid username or password");
@@ -372,7 +199,7 @@ Response EndpointHandler::performLogout(Request request)
 			return WebEntity::createError(ErrorType::INTERNAL_SERVER_ERROR, request.return_type, e.message());
 		}
 		body = request.form_urlencoded["token"].toLocal8Bit();
-		return Response{generateHeaders(body.length(), ContentType::TEXT_PLAIN), body};
+		return Response{EndpointHelper::generateHeaders(body.length(), ContentType::TEXT_PLAIN), body};
 	}
 	return WebEntity::createError(ErrorType::FORBIDDEN, request.return_type, "You have provided an invalid token");
 }

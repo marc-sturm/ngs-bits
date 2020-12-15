@@ -1,6 +1,7 @@
 #ifndef REQUESTHANDLER_H
 #define REQUESTHANDLER_H
 
+#include "cppREST_global.h"
 #include <QObject>
 #include <QTcpSocket>
 #include <QList>
@@ -13,10 +14,9 @@
 #include "Settings.h"
 #include "WorkerThread.h"
 
-
 Q_DECLARE_METATYPE(Response)
 
-class RequestHandler : public QObject
+class CPPRESTSHARED_EXPORT RequestHandler : public QObject
 {
     Q_OBJECT
 

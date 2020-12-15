@@ -1,12 +1,3 @@
-#include <QDebug>
-#include <QFile>
-#include <QSslCertificate>
-#include <QSslKey>
-#include <QSslConfiguration>
-#include <QSslSocket>
-
-#include "SslServer.h"
-#include "RequestHandler.h"
 #include "HttpsServer.h"
 
 HttpsServer::HttpsServer(quint16 port)
@@ -14,7 +5,9 @@ HttpsServer::HttpsServer(quint16 port)
 	QString ssl_certificate = ServerHelper::getStringSettingsValue("ssl_certificate");
 	if (ssl_certificate.isEmpty())
 	{
-		qFatal("SSL certificate has not been specified in the config");
+//		ssl_certificate = QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + QDir::separator() + "test-cert.crt";
+		ssl_certificate = "/etc/ssl/certs/test-cert.crt";
+		qDebug() << "SSL certificate has not been specified in the config. Using a test certificate: " + ssl_certificate;
 	}
 
 	QFile certFile(ssl_certificate);
@@ -27,7 +20,9 @@ HttpsServer::HttpsServer(quint16 port)
 	QString ssl_key = ServerHelper::getStringSettingsValue("ssl_key");
 	if (ssl_key.isEmpty())
 	{
-		qFatal("SSL key has not been specified in the config");
+		ssl_key = QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + QDir::separator() + "test-key.key";
+//		ssl_key = "/etc/ssl/certs/test-key.key";
+		qDebug() << "SSL key has not been specified in the config. Using a test key: " + ssl_key;
 	}
 
 	QFile keyFile(ssl_key);

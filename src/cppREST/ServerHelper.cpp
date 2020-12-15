@@ -36,7 +36,7 @@ bool ServerHelper::canConvertToInt(QString in)
 
 QString ServerHelper::generateUniqueStr()
 {
-	return QUuid::createUuid().toString(QUuid::WithoutBraces);
+	return QUuid::createUuid().toString().replace("{", "").replace("}", "");
 }
 
 int ServerHelper::getNumSettingsValue(QString key)
@@ -48,7 +48,7 @@ int ServerHelper::getNumSettingsValue(QString key)
 	}
 	catch (Exception& e)
 	{
-		qFatal("The server is stopped due to the missing numerical settings entity: %s", e.message().toLocal8Bit().data());
+		qDebug() << "The server may crash due to the missing numerical key " + key + " from settings: ", e.message();
 	}
 
 	return num_value;
@@ -63,7 +63,7 @@ QString ServerHelper::getStringSettingsValue(QString key)
 	}
 	catch (Exception& e)
 	{
-		qFatal("The server is stopped due to the missing string settings entity: %s", e.message().toLocal8Bit().data());
+		qDebug() << "The server may crash due to the missing string key " + key + " from settings: ", e.message();
 	}
 
 	return string_value;

@@ -42,7 +42,7 @@ build_libs_release:
 	rm -rf build-libs-Linux-Release;
 	mkdir -p build-libs-Linux-Release;
 	cd build-libs-Linux-Release; \
-		qmake ../src/libs.pro "CONFIG-=debug" "CONFIG+=release" "DEFINES+=QT_NO_DEBUG_OUTPUT"; \
+		qmake ../src/libs.pro "CONFIG-=debug" "CONFIG+=release"; "DEFINES+=QT_NO_DEBUG_OUTPUT"; \
 		make -j5;
 
 build_tools_release:
@@ -80,7 +80,7 @@ clean:
 	find bin -type f -or -type l | grep -v ".ini" | grep -v "GSvar_" | grep -v "libhts" | xargs -l1 rm -rf
 
 test_lib:
-	cd bin && ./cppCORE-TEST && ./cppNGS-TEST && ./cppNGSD-TEST
+	cd bin && ./cppCORE-TEST && ./cppNGS-TEST && ./cppNGSD-TEST && ./cppREST-TEST
 
 test_tools:
 	cd bin && ./tools-TEST

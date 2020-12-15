@@ -1,13 +1,14 @@
 #ifndef ENDPOINTMANAGER_H
 #define ENDPOINTMANAGER_H
 
+#include "cppREST_global.h"
 #include <QDebug>
 #include <QFile>
 #include "ServerHelper.h"
 #include "WebEntity.h"
 #include "WebExceptions.h"
 
-struct ParamProps
+struct CPPRESTSHARED_EXPORT ParamProps
 {
 	enum ParamType
 	{
@@ -35,7 +36,7 @@ struct ParamProps
 	}	
 };
 
-struct Endpoint
+struct CPPRESTSHARED_EXPORT Endpoint
 {
 	QString url;
 	QMap<QString, ParamProps> params;
@@ -50,7 +51,7 @@ struct Endpoint
 	}
 };
 
-class EndpointManager
+class CPPRESTSHARED_EXPORT EndpointManager
 {
 
 public:

@@ -212,7 +212,7 @@ BedLine GSvarHelper::liftOver(const Chromosome& chr, int start, int end)
 {
 	//call lift-over webservice
 	QString base_url = Settings::string("liftover_webservice");
-	HttpHandler handler(HttpHandler::NONE);
+	HttpHandler handler(HttpRequestHandler::ProxyType::NONE);
 	QString output = handler.get(base_url + "?chr=" + chr.strNormalized(true) + "&start=" + QString::number(start) + "&end=" + QString::number(end));
 
 	//handle error from webservice

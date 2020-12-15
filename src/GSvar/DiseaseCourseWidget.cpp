@@ -42,8 +42,8 @@ void DiseaseCourseWidget::VariantDoubleClicked(QTableWidgetItem* item)
 	foreach (const cfDnaColumn& cf_dna, cf_dna_columns_)
 	{
 		QString ps_id = db_.processedSampleId(cf_dna.name);
-		QString bam = NGSD().processedSamplePath(ps_id, NGSD::BAM);
-		igv_commands << "load \"" + Helper::canonicalPath(bam) + "\"";
+        QString bam = NGSD().processedSamplePath(ps_id, PathType::BAM);
+		igv_commands << "load \"" + QDir::toNativeSeparators(bam) + "\"";
 
 	}
 	emit executeIGVCommands(igv_commands);

@@ -1,6 +1,7 @@
 #ifndef SESSIONMANAGER_H
 #define SESSIONMANAGER_H
 
+#include "cppREST_global.h"
 #include <QMap>
 #include <QDebug>
 #include <QDateTime>
@@ -8,14 +9,14 @@
 #include "Settings.h"
 #include "Exceptions.h"
 
-struct Session
+struct CPPRESTSHARED_EXPORT Session
 {
 	QString user_id;
 	QString secure_token;
 	QDateTime login_time;
 };
 
-class SessionManager
+class CPPRESTSHARED_EXPORT SessionManager
 {
 public:
 	static void addNewSession(QString id, Session in);

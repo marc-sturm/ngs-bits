@@ -1,0 +1,32 @@
+#ifndef HTTPSSERVER_H
+#define HTTPSSERVER_H
+
+#include "cppREST_global.h"
+#include <QObject>
+#include <QDebug>
+#include <QFile>
+#include <QSslCertificate>
+#include <QSslKey>
+#include <QSslConfiguration>
+#include <QSslSocket>
+#include <QStandardPaths>
+
+#include "SslServer.h"
+#include "RequestHandler.h"
+
+class CPPRESTSHARED_EXPORT HttpsServer : public QObject
+{
+    Q_OBJECT
+
+public:
+	HttpsServer(quint16 port);
+    ~HttpsServer();
+
+protected slots:
+    void handleConnection();
+
+private:
+	SslServer *server;	
+};
+
+#endif // HTTPSSERVER_H

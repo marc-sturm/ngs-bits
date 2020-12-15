@@ -4,8 +4,9 @@
 #include <QTextStream>
 #include "HttpsServer.h"
 #include "ServerHelper.h"
-#include "EndpointManager.h"
+#include "EndpointHelper.h"
 #include "EndpointHandler.h"
+
 
 QFile gsvar_server_log_file("gsvar-server-log.txt");
 
@@ -44,7 +45,7 @@ void interceptLogMessage(QtMsgType type, const QMessageLogContext &, const QStri
 	// 1: += info
 	// 2: += warning
 	// 3: += debug
-	int log_level = Settings::integer("log_level");
+	int log_level = ServerHelper::getNumSettingsValue("log_level");
 	if (msg_level <= log_level)
 	{
 		printf("%s", qUtf8Printable(log_statement));
@@ -92,7 +93,7 @@ int main(int argc, char **argv)
 						Request::MethodType::GET,
 						ContentType::TEXT_HTML,
 						"Static content served from the server root folder (defined in the config file)",
-						&EndpointHandler::serveStaticFile
+						&EndpointHelper::serveStaticFile
 				   });
 
 	EndpointManager::appendEndpoint(Endpoint{
@@ -104,7 +105,7 @@ int main(int argc, char **argv)
 						Request::MethodType::GET,
 						ContentType::TEXT_HTML,
 						"Help page on the usage of the endpoints",
-						&EndpointHandler::serveEndpointHelp
+						&EndpointHelper::serveEndpointHelp
 					});
 
 	EndpointManager::appendEndpoint(Endpoint{

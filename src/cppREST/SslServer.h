@@ -1,6 +1,7 @@
 #ifndef SSLSERVER_P_H
 #define SSLSERVER_P_H
 
+#include "cppREST_global.h"
 #include <QTcpServer>
 #include <QSslSocket>
 #include <QSslError>
@@ -8,7 +9,7 @@
 #include <QList>
 #include "Exceptions.h"
 
-class SslServer : public QTcpServer
+class CPPRESTSHARED_EXPORT SslServer : public QTcpServer
 {
     Q_OBJECT
 

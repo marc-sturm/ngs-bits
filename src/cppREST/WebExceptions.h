@@ -1,10 +1,11 @@
 #ifndef WEBEXCEPTIONS_H
 #define WEBEXCEPTIONS_H
 
+#include "cppREST_global.h"
 #include "Exceptions.h"
 
 // Error 400
-class CPPCORESHARED_EXPORT BadRequest
+class CPPRESTSHARED_EXPORT BadRequest
 		: public Exception
 {
 public:
@@ -12,7 +13,7 @@ public:
 };
 
 // Error 401
-class CPPCORESHARED_EXPORT Unauthorized
+class CPPRESTSHARED_EXPORT Unauthorized
 		: public Exception
 {
 public:
@@ -20,7 +21,7 @@ public:
 };
 
 // Error 403
-class CPPCORESHARED_EXPORT Forbidden
+class CPPRESTSHARED_EXPORT Forbidden
 		: public Exception
 {
 public:
@@ -28,7 +29,7 @@ public:
 };
 
 // Error 404
-class CPPCORESHARED_EXPORT NotFound
+class CPPRESTSHARED_EXPORT NotFound
 		: public Exception
 {
 public:
@@ -36,7 +37,7 @@ public:
 };
 
 // Error 415
-class CPPCORESHARED_EXPORT UnsupportedMediaType
+class CPPRESTSHARED_EXPORT UnsupportedMediaType
 		: public Exception
 {
 public:
@@ -44,7 +45,7 @@ public:
 };
 
 // Error 500
-class CPPCORESHARED_EXPORT InternalError
+class CPPRESTSHARED_EXPORT InternalError
 		: public Exception
 {
 public:
@@ -52,7 +53,7 @@ public:
 };
 
 // Error 503
-class CPPCORESHARED_EXPORT ServiceUnavailable
+class CPPRESTSHARED_EXPORT ServiceUnavailable
 		: public Exception
 {
 public:
