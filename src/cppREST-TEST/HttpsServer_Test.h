@@ -28,22 +28,22 @@ private slots:
 						});
 
 		HttpsServer sslserver(8443);
-//		try
-//		{
-//			HttpHeaders add_headers;
-//			add_headers.insert("Accept", "application/json");
-//			reply = HttpRequestHandler(HttpRequestHandler::NONE).get("https://localhost:8443/v1/info", add_headers);
-//		}
-//		catch(Exception& e)
-//		{
-//			qDebug() << "Error while getting API info:" << e.message();
-//		}
+		try
+		{
+			HttpHeaders add_headers;
+			add_headers.insert("Accept", "application/json");
+			reply = HttpRequestHandler(HttpRequestHandler::NONE).get("https://localhost:8443/v1/info", add_headers);
+		}
+		catch(Exception& e)
+		{
+			qDebug() << "Error while getting API info:" << e.message();
+		}
 
-//		QJsonDocument json_doc = QJsonDocument::fromJson(reply.toLatin1());
-//		QJsonObject json_obj = json_doc.object();
+		QJsonDocument json_doc = QJsonDocument::fromJson(reply.toLatin1());
+		QJsonObject json_obj = json_doc.object();
 
-//		IS_TRUE(!reply.isEmpty());
-//		S_EQUAL(json_obj.value("name").toString(), "GSvarServer");
+		IS_TRUE(!reply.isEmpty());
+		S_EQUAL(json_obj.value("name").toString(), "GSvarServer");
 
 		QThread::sleep(5);
 		try
@@ -59,6 +59,5 @@ private slots:
 
 		}
 		IS_TRUE(reply.indexOf("This action cannot be processed")!=-1);
-//		IS_TRUE(1);
 	}
 };

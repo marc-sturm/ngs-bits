@@ -29,10 +29,10 @@ void IgvDialog::addFile(const FileLocation file, bool checked)
 		group = new QTreeWidgetItem(QStringList() << FileLocationHelper::pathTypeToString(file.type));
 		group->setFlags(Qt::ItemIsUserCheckable|Qt::ItemIsEnabled);
 		if (file.type==PathType::VCF) group->setToolTip(0, "Variant list(s)");
-		if (file.type==PathType::BAM) group->setToolTip(0, "Sequencing read file(s)");
-		if (file.type==PathType::CNV) group->setToolTip(0, "Copy-number file(s)");
+                if (file.type==PathType::BAM) group->setToolTip(0, "Sequencing read file(s)");
+                if (file.type==PathType::COPY_NUMBER_CALLS) group->setToolTip(0, "Copy-number file(s)");
 		if (file.type==PathType::BAF) group->setToolTip(0, "b-allele frequency file(s)");
-		if (file.type==PathType::CNV_CALLS) group->setToolTip(0, "regions file(s)");
+//		if (file.type==PathType::CNV_CALLS) group->setToolTip(0, "regions file(s)");
 		if (file.type==PathType::OTHER) group->setToolTip(0, "Custom tracks");
 		ui_.tree->addTopLevelItem(group);
 	}

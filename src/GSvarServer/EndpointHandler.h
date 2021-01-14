@@ -14,6 +14,7 @@
 #include "NGSD.h"
 #include "SessionManager.h"
 #include "EndpointHelper.h"
+#include "UrlManager.h"
 
 #include "FileLocationProviderFileSystem.h"
 #include "VariantList.h"
@@ -31,9 +32,13 @@ public:
 	static QString getGSvarFile(QString sample_name, bool search_multi);
 	static Response serveIndexPage(Request request);
 	static Response serveApiInfo(Request request);
+	static Response serveTempUrl(Request request);
 	static Response locateFileByType(Request request);
 	static Response performLogin(Request request);
 	static Response performLogout(Request request);
+
+private:
+	static QString createTempUrl(FileLocation file);
 };
 
 #endif // ENDPOINTHANDLER_H

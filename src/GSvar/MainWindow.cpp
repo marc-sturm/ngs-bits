@@ -1525,14 +1525,19 @@ bool MainWindow::initializeIvg(QAbstractSocket& socket)
 	QString roi = ui_.filters->targetRegion();
 	if (roi!="")
 	{
-		dlg.addFile("target region track", "BED", roi, true);
+		bool is_found = false;
+                if (QFile::exists(roi)) is_found = true;
+                dlg.addFile(FileLocation{"target region track", PathType::COPY_NUMBER_CALLS, roi, is_found}, true);
 	}
 
 	//sample low-coverage
-	QList<IgvFile> low_cov_files = getLowCovFiles();
-	foreach(const IgvFile& file, low_cov_files)
+	QList<FileLocation> low_cov_files = getLowCovFiles();
+	foreach(const FileLocation& file, low_cov_files)
 	{
-		dlg.addFile(file.id, file.type, file.filename, ui_.actionIgvLowcov->isChecked());
+		bool is_found = false;
+                if (QFile::exists(file.filename)) is_found = true;
+                dlg.addFile(FileLocation{"low-coverage regions track", PathType::COPY_NUMBER_CALLS, file.filename, is_found}, ui_.actionIgvLowcov->isChecked());
+
 	}
 	//amplicon file (of processing system)
 	try
@@ -1542,7 +1547,7 @@ bool MainWindow::initializeIvg(QAbstractSocket& socket)
 		QString amplicons = system_data.target_amplicon_file;
 		if (amplicons!="")
 		{
-			dlg.addFile("amplicons track (of processing system)", "BED", amplicons, true);
+			dlg.addFile(FileLocation{"amplicons track (of processing system)", PathType::COPY_NUMBER_CALLS, amplicons, true}, true);
 		}
 	}
 	catch(...) {} //Nothing to do here
@@ -5676,11 +5681,18 @@ QList<IgvFile> MainWindow::getIgvFilesBaf()
 	return output;
 }
 
-QList<IgvFile> MainWindow::getMantaEvidenceFiles()
+QList<FileLocation> MainWindow::getIgvFilesBaf()
 {
-	QList<IgvFile> output;
+	return GlobalServiceProvider::instance().fileLocationsProvider()->getIgvFilesBaf();
+}
 
-	foreach (const IgvFile& bam_file, getBamFiles())
+QList<FileLocation> MainWindow::getMantaEvidenceFiles()
+{	
+	QList<FileLocation> evidence_files;
+
+	// search at location of all available BAM files
+        QList<FileLocation> bam_files = GlobalServiceProvider::instance().fileLocationsProvider()->getBamFiles();
+	foreach (FileLocation bam_file, bam_files)
 	{
 		QString evidence_bam_file = GSvarHelper::getEvidenceFile(bam_file.filename);
 		if (!QFile::exists(evidence_bam_file)) continue;
@@ -5691,7 +5703,7 @@ QList<IgvFile> MainWindow::getMantaEvidenceFiles()
 		evidence_file.type = "BAM";
 		output.append(evidence_file);
 	}
-	return output;
+    return evidence_files;
 }
 
 QList<IgvFile> MainWindow::getLowCovFiles()
@@ -5707,7 +5719,7 @@ QList<IgvFile> MainWindow::getLowCovFiles()
 		{
 			IgvFile	file;
 			file.id = QFileInfo(bed).fileName().replace("_stat_lowcov.bed", "") + " (low-coverage regions)";
-			file.type = "BED";
+                        file.type = PathType::COPY_NUMBER_CALLS;
 			file.filename = bed;
 			output.append(file);
 		}
@@ -5715,16 +5727,16 @@ QList<IgvFile> MainWindow::getLowCovFiles()
 	else
 	{
 		// search in sample folders containing BAM files
-		foreach (const IgvFile& bam_file, getBamFiles())
+                foreach (const FileLocation& bam_file, GlobalServiceProvider::instance().fileLocationsProvider()->getBamFiles())
 		{
 			QString folder = QFileInfo(bam_file.filename).absolutePath();
 			QStringList beds = Helper::findFiles(folder, "*_lowcov.bed", false);
 
 			foreach(const QString& bed, beds)
 			{
-				IgvFile	file;
+                                FileLocation file;
 				file.id = bam_file.id + " (low-coverage regions)";
-				file.type = "BED";
+                                file.type = PathType::COPY_NUMBER_CALLS;
 				file.filename = bed;
 				output.append(file);
 			}

@@ -54,6 +54,7 @@ SOURCES += \
     ServerHelper.cpp \
     SessionManager.cpp \
     SslServer.cpp \
+    UrlManager.cpp \
     WebEntity.cpp \
     WebExceptions.cpp \
     WorkerThread.cpp
@@ -67,6 +68,7 @@ HEADERS += \
     ServerHelper.h \
     SessionManager.h \
     SslServer.h \
+    UrlManager.h \
     WebEntity.h \
     WebExceptions.h \
     WorkerThread.h

@@ -21,48 +21,82 @@ QString EndpointHelper::getFileNameWithExtension(QString filename_with_path)
 	return path_items.takeLast();
 }
 
-QByteArray EndpointHelper::readFileContent(QString filename)
+StaticFile EndpointHelper::readFileContent(QString filename, ByteRange byte_range)
 {
 	qDebug() << "Reading file:" << filename;
-	QByteArray content {};
+	StaticFile static_file {};
+	static_file.filename_with_path = filename;
+	static_file.modified = QFileInfo(filename).lastModified();
 
 	QString found_id = FileCache::getFileIdIfInCache(filename);
 	if (found_id.length() > 0)
 	{
 		qDebug() << "File has been found in the cache:" << found_id;
-		return FileCache::getFileById(found_id).content;
+		return FileCache::getFileById(found_id);
 	}
 
 
 	QFile file(filename);
+	static_file.size = file.size();
 	if (!file.open(QIODevice::ReadOnly))
 	{
 		THROW(FileAccessException, "File could not be found: " + filename);
 	}
 
-	if (!file.atEnd())
+	if ((!file.atEnd()) && (byte_range.length == 0))
 	{
-		content = file.readAll();
+		qDebug() << "Reading the entire file at once";
+		static_file.content = file.readAll();
 	}
 
-	qDebug() << "Adding file to the cache:" << filename;
-	FileCache::addFileToCache(ServerHelper::generateUniqueStr(), filename, content);
-	return content;
+	if ((!file.atEnd()) && (byte_range.length > 0) && (file.seek(byte_range.start)))
+	{
+		qDebug() << "Partial file reading";
+		static_file.content = file.read(byte_range.length);
+	}
+
+//	if (!content.isEmpty())
+//	{
+//		qDebug() << "Adding file to the cache:" << filename;
+//		FileCache::addFileToCache(ServerHelper::generateUniqueStr(), filename, content);
+//	}
+
+	file.close();
+
+	return static_file;
 }
 
-Response EndpointHelper::serveStaticFile(QString filename, ContentType type, bool is_downloadable)
+QString EndpointHelper::addFileToCache(QString filename)
 {
-	QByteArray body {};
+	readFileContent(filename, ByteRange{});
+	return FileCache::getFileIdIfInCache(filename);
+}
+
+Response EndpointHelper::serveStaticFile(QString filename, ByteRange byte_range, ContentType type, bool is_downloadable)
+{
+	StaticFile static_file {};
 	try
 	{
-		body = readFileContent(filename);
+		static_file = readFileContent(filename, byte_range);
 	}
 	catch(Exception& e)
 	{
 		return WebEntity::createError(ErrorType::INTERNAL_SERVER_ERROR, ContentType::TEXT_HTML, e.message());
 	}
 
-	return (Response{generateHeaders(getFileNameWithExtension(filename), body.length(), type, is_downloadable), body});
+	return (Response{generateHeaders(getFileNameWithExtension(filename), static_file.content.length(), byte_range, static_file.size, type, is_downloadable), static_file.content});
+}
+
+Response EndpointHelper::serveStaticFileFromCache(QString id, ByteRange byte_range, ContentType type, bool is_downloadable)
+{
+	StaticFile static_file = FileCache::getFileById(id);
+
+	if (static_file.content.isEmpty() || static_file.content.isNull())
+	{
+		return WebEntity::createError(ErrorType::INTERNAL_SERVER_ERROR, ContentType::TEXT_HTML, "Empty or corrpupted file");
+	}
+
+	return (Response{generateHeaders(getFileNameWithExtension(FileCache::getFileById(id).filename_with_path), static_file.content.length(), byte_range, static_file.size, type, is_downloadable), static_file.content});
 }
 
 Response EndpointHelper::serveFolderContent(QString folder)
@@ -93,27 +127,41 @@ Response EndpointHelper::serveFolderContent(QString folder)
 	return WebEntity::cretateFolderListing(files);
 }
 
-QByteArray EndpointHelper::generateHeaders(QString filename, int length, ContentType type, bool is_downloadable)
+QByteArray EndpointHelper::generateHeaders(QString filename, int length, ByteRange byte_range, qint64 file_size, ContentType type, bool is_downloadable)
 {
 	QByteArray headers {};
-	headers.append("HTTP/1.1 200 OK\n");
+	if ((byte_range.end > 0) && (byte_range.length > 0))
+	{
+		headers.append("HTTP/1.1 206 Partial Content\n");
+	}
+	else
+	{
+		headers.append("HTTP/1.1 200 OK\n");
+	}
+	headers.append("Date: " + QDateTime::currentDateTime().toUTC().toString() + "\n");
+	headers.append("Server: " + ServerHelper::getAppName() + "\n");
 	headers.append("Connection: Keep-Alive\n");
 	headers.append("Keep-Alive: timeout=5, max=1000\n");
 	headers.append("Content-Length: " + QString::number(length) + "\n");
 	headers.append("Content-Type: " + WebEntity::convertContentTypeToString(type) + "\n");
+
+	if ((byte_range.end > 0) && (byte_range.length > 0))
+	{
+		headers.append("Accept-Ranges: bytes\n");
+		headers.append("Content-Range: bytes " + QString::number(byte_range.start) + "-" + QString::number(byte_range.end) + "/" + QString::number(file_size) + "\n");
+	}
 	if (is_downloadable)
 	{
 		headers.append("Content-Disposition: form-data; name=file_download; filename=" + filename + "\n");
 	}
 
-	headers.append("\n");
-
+	headers.append("\n");	
 	return headers;
 }
 
 QByteArray EndpointHelper::generateHeaders(int length, ContentType type)
 {
-	return generateHeaders("", length, type, false);
+	return generateHeaders("", length, ByteRange{}, 0, type, false);
 }
 
 Response EndpointHelper::listFolderContent(Request request)
@@ -141,15 +189,42 @@ Response EndpointHelper::serveStaticFile(Request request)
 {
 	qDebug() << "Accessing static content";
 	QString path = ServerHelper::getStringSettingsValue("server_root");
+	ByteRange byte_range {};
+	byte_range.start = 0;
+	byte_range.end = 0;
+	if (request.headers.contains("range"))
+	{
+		QString range_value = request.headers.value("range");
+		qDebug() << "Reading byte range header:" << range_value;
+		range_value = range_value.replace("bytes", "");
+		range_value = range_value.replace("=", "");
+		range_value = range_value.trimmed();
+		if (range_value.count("-") == 1)
+		{
+			byte_range.start = static_cast<quint64>(range_value.mid(0, range_value.indexOf("-")).trimmed().toULongLong());
+			byte_range.end = static_cast<quint64>(range_value.mid(range_value.indexOf("-")+1, range_value.length()-range_value.indexOf("-")).trimmed().toULongLong());
+		}
+	}
+	qDebug() << "Minus = " << byte_range.end - byte_range.start;
+	byte_range.length = ((byte_range.end - byte_range.start) > -1.0) ? (byte_range.end - byte_range.start) : 0;
+	qDebug() << "bytes = " << byte_range.start << ", " << byte_range.end << ", len = " << byte_range.length;
+
 	path = WebEntity::getUrlWithoutParams(path.trimmed() + request.path_params[0]);
-	return serveStaticFile(path, WebEntity::getContentTypeByFilename(path), false);
+	return serveStaticFile(path, byte_range, WebEntity::getContentTypeByFilename(path), false);
+}
+
+Response EndpointHelper::serveStaticFileFromCache(Request request)
+{
+	qDebug() << "Accessing static content from cache";
+	QString path = WebEntity::getUrlWithoutParams(FileCache::getFileById(request.path_params[0]).filename_with_path);
+	return serveStaticFile(path, ByteRange{}, WebEntity::getContentTypeByFilename(path), false);
 }
 
 Response EndpointHelper::serveProtectedStaticFile(Request request)
 {
 	if (!isEligibileToAccess(request)) return WebEntity::createError(ErrorType::FORBIDDEN, request.return_type, "Secure token has not been provided");
 
-	return serveStaticFile(":/assets/client/example.png", ContentType::APPLICATION_OCTET_STREAM, true);
+	return serveStaticFile(":/assets/client/example.png", ByteRange{}, ContentType::APPLICATION_OCTET_STREAM, true);
 }
 
 EndpointHelper::EndpointHelper()

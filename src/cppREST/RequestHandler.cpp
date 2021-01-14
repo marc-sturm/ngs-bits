@@ -53,7 +53,7 @@ QList<QByteArray> RequestHandler::getRequestBody()
 	}
 	else if (socket->bytesAvailable() > MAX_REQUEST_LENGTH)
 	{
-                writeResponse(WebEntity::createError(ErrorType::BAD_REQUEST, ContentType::TEXT_HTML, "Maximum request lenght has been exceeded"));
+		writeResponse(WebEntity::createError(ErrorType::BAD_REQUEST, ContentType::TEXT_HTML, "Maximum request lenght has been exceeded"));
 	}
 
 	return request_items;
@@ -143,7 +143,7 @@ void RequestHandler::parseRequest(QList<QByteArray> body)
 			QList<QByteArray> request_info = body[i].split(' ');
 			if (request_info.length() < 2)
 			{
-                                writeResponse(WebEntity::createError(ErrorType::BAD_REQUEST, ContentType::TEXT_HTML, "Cannot process the request. It is possible a URL is missing or incorrect"));
+				writeResponse(WebEntity::createError(ErrorType::BAD_REQUEST, ContentType::TEXT_HTML, "Cannot process the request. It is possible a URL is missing or incorrect"));
 				return;
 			}
 			try
@@ -152,7 +152,7 @@ void RequestHandler::parseRequest(QList<QByteArray> body)
 			}
 			catch (ArgumentException& e)
 			{
-                                writeResponse(WebEntity::createError(ErrorType::BAD_REQUEST, ContentType::TEXT_HTML, e.message()));
+				writeResponse(WebEntity::createError(ErrorType::BAD_REQUEST, ContentType::TEXT_HTML, e.message()));
 				return;
 			}
 
@@ -173,7 +173,7 @@ void RequestHandler::parseRequest(QList<QByteArray> body)
 		int param_separator = body[i].indexOf('=');
 		if ((header_separator == -1) && (param_separator == -1) && (body[i].length() > 0))
 		{
-                        writeResponse(WebEntity::createError(ErrorType::BAD_REQUEST, ContentType::TEXT_HTML, "Malformed element: " + body[i]));
+			writeResponse(WebEntity::createError(ErrorType::BAD_REQUEST, ContentType::TEXT_HTML, "Malformed element: " + body[i]));
 			return;
 		}
 

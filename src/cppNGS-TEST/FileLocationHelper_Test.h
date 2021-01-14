@@ -25,11 +25,11 @@ private slots:
 		text = FileLocationHelper::pathTypeToString(PathType::BAF);
 		S_EQUAL(text, "BAF");
 
-		text = FileLocationHelper::pathTypeToString(PathType::CNV_CALLS);
-		S_EQUAL(text, "CNV_CALLS");
+		text = FileLocationHelper::pathTypeToString(PathType::COPY_NUMBER_CALLS);
+		S_EQUAL(text, "COPY_NUMBER_CALLS");
 
-		text = FileLocationHelper::pathTypeToString(PathType::CNV_ESTIMATES);
-		S_EQUAL(text, "CNV_ESTIMATES");
+		text = FileLocationHelper::pathTypeToString(PathType::COPY_NUMBER_RAW_DATA);
+		S_EQUAL(text, "COPY_NUMBER_RAW_DATA");
 
 		text = FileLocationHelper::pathTypeToString(PathType::OTHER);
 		S_EQUAL(text, "OTHER");

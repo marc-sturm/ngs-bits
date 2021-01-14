@@ -90,13 +90,26 @@ QString EndpointHandler::getGSvarFile(QString sample_name, bool search_multi)
 Response EndpointHandler::serveIndexPage(Request request)
 {
 	qInfo() << "Index page has been requested: " << request.remote_address;
-	return EndpointHelper::serveStaticFile(":/assets/client/info.html", ContentType::TEXT_HTML, false);
+	return EndpointHelper::serveStaticFile(":/assets/client/info.html", ByteRange{}, ContentType::TEXT_HTML, false);
 }
 
 Response EndpointHandler::serveApiInfo(Request request)
 {
 	qInfo() << "API information has been requested: " << request.remote_address;
-	return EndpointHelper::serveStaticFile(":/assets/client/api.json", ContentType::APPLICATION_JSON, false);
+	return EndpointHelper::serveStaticFile(":/assets/client/api.json", ByteRange{}, ContentType::APPLICATION_JSON, false);
+}
+
+Response EndpointHandler::serveTempUrl(Request request)
+{
+	qDebug() << "Accessing a file via temporary id";
+	UrlEntity url_entity = UrlManager::getURLById(request.path_params[0]);
+	if (url_entity.filename_with_path.isEmpty())
+	{
+		return WebEntity::createError(ErrorType::NOT_FOUND, request.return_type, "Could not find a file linked to the id: " + request.path_params[0]);
+	}
+
+	qDebug() << "Serving file: " << url_entity.filename_with_path;
+	return EndpointHelper::serveStaticFile(url_entity.filename_with_path, ByteRange{}, WebEntity::getContentTypeByFilename(url_entity.filename_with_path), false);
 }
 
 Response EndpointHandler::locateFileByType(Request request)
@@ -119,12 +132,12 @@ Response EndpointHandler::locateFileByType(Request request)
 	QJsonDocument json_doc_output {};
 	QJsonArray json_list_output {};
 
-	switch(FileLocationHelper::stringTopathType(request.url_params["type"].toLower()))
+	switch(FileLocationHelper::stringToPathType(request.url_params["type"].toLower()))
 	{
 		case PathType::BAM:
 			file_list = file_locator->getBamFiles();
 			break;
-		case PathType::CNV_ESTIMATES:
+		case PathType::COPY_NUMBER_RAW_DATA:
 			file_list = file_locator->getSegFilesCnv();
 			break;
 		case PathType::BAF:
@@ -151,7 +164,8 @@ Response EndpointHandler::locateFileByType(Request request)
 		QJsonObject cur_json_item {};
 		cur_json_item.insert("id", file_list[i].id);
 		cur_json_item.insert("type", FileLocationHelper::pathTypeToString(file_list[i].type));
-		cur_json_item.insert("filename", file_list[i].filename);
+//		cur_json_item.insert("filename", file_list[i].filename);
+		cur_json_item.insert("filename", createTempUrl(file_list[i]));
 		cur_json_item.insert("is_found", file_list[i].is_found);
 
 		json_list_output.append(cur_json_item);
@@ -202,4 +216,13 @@ Response EndpointHandler::performLogout(Request request)
 		return Response{EndpointHelper::generateHeaders(body.length(), ContentType::TEXT_PLAIN), body};
 	}
 	return WebEntity::createError(ErrorType::FORBIDDEN, request.return_type, "You have provided an invalid token");
+}
+
+QString EndpointHandler::createTempUrl(FileLocation file)
+{
+	QString id = ServerHelper::generateUniqueStr();
+	UrlManager::addUrlToStorage(id, file.filename);
+	return ServerHelper::getStringSettingsValue("server_host") +
+			+ ":" + ServerHelper::getStringSettingsValue("server_port") +
+			+ "/v1/temp/" + id;
 }

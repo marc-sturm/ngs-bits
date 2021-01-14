@@ -62,11 +62,11 @@ QList<FileLocation> FileLocationProviderFileSystem::getSegFilesCnv()
 		//tumor-normal SEG file
 		QString pair = QFileInfo(gsvar_file_).baseName();
 
-		FileLocation cnvs_seg = FileLocation{pair + " (copy number)", PathType::CNV_ESTIMATES, gsvar_file_.left(gsvar_file_.length()-6) + "_cnvs.seg", false};
+		FileLocation cnvs_seg = FileLocation{pair + " (copy number)", PathType::COPY_NUMBER_RAW_DATA, gsvar_file_.left(gsvar_file_.length()-6) + "_cnvs.seg", false};
 		setIsFoundFlag(cnvs_seg);
 		output << cnvs_seg;
 
-		FileLocation con_seg = FileLocation{pair + " (coverage)", PathType::CNV_ESTIMATES, gsvar_file_.left(gsvar_file_.length()-6) + "_cov.seg", false};
+		FileLocation con_seg = FileLocation{pair + " (coverage)", PathType::COPY_NUMBER_RAW_DATA, gsvar_file_.left(gsvar_file_.length()-6) + "_cov.seg", false};
 		setIsFoundFlag(con_seg);
 		output << con_seg;
 
@@ -77,7 +77,7 @@ QList<FileLocation> FileLocationProviderFileSystem::getSegFilesCnv()
 			QString tumor_ps_name = basename.split("-")[1];
 			QString pair_folder = QFileInfo(gsvar_file_).absolutePath();
 			QString project_folder = QFileInfo(pair_folder).absolutePath();
-			output << FileLocation{tumor_ps_name, PathType::CNV_ESTIMATES, project_folder + "/Sample_" + tumor_ps_name + "/" + tumor_ps_name + "_cnvs.seg", false};
+			output << FileLocation{tumor_ps_name, PathType::COPY_NUMBER_RAW_DATA, project_folder + "/Sample_" + tumor_ps_name + "/" + tumor_ps_name + "_cnvs.seg", false};
 		}
 	}
 	else
@@ -86,7 +86,7 @@ QList<FileLocation> FileLocationProviderFileSystem::getSegFilesCnv()
 		foreach(const FileLocation& file, tmp)
 		{
 			QString base_name = file.filename.left(file.filename.length()-4);
-			FileLocation cnvs_clincnv_seg = FileLocation{file.id, PathType::CNV_ESTIMATES, base_name + "_cnvs_clincnv.seg", false};
+			FileLocation cnvs_clincnv_seg = FileLocation{file.id, PathType::COPY_NUMBER_RAW_DATA, base_name + "_cnvs_clincnv.seg", false};
 			setIsFoundFlag(cnvs_clincnv_seg);
 			if (cnvs_clincnv_seg.is_found)
 			{
@@ -94,7 +94,7 @@ QList<FileLocation> FileLocationProviderFileSystem::getSegFilesCnv()
 			}
 			else
 			{
-				FileLocation cnvs_seg = FileLocation{file.id, PathType::CNV_ESTIMATES, base_name + "_cnvs.seg", false};
+				FileLocation cnvs_seg = FileLocation{file.id, PathType::COPY_NUMBER_RAW_DATA, base_name + "_cnvs.seg", false};
 				setIsFoundFlag(cnvs_seg);
 				output << cnvs_seg;
 			}

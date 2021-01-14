@@ -35,6 +35,7 @@ HEADERS += \
     HttpsServer_Test.h \
     ServerHelper_Test.h \
     SessionManager_Test.h \
+    UrlManager_Test.h \
     WebEntity_Test.h
 
 SOURCES += \

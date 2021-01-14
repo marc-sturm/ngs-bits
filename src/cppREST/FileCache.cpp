@@ -15,10 +15,10 @@ FileCache& FileCache::instance()
 	return file_cache;
 }
 
-void FileCache::addFileToCache(QString id, QString filename_with_path, QByteArray content)
+void FileCache::addFileToCache(QString id, QString filename_with_path, QByteArray content, qint64 size)
 {
 	instance().mutex_.lock();
-	instance().file_cache_.insert(id, CacheItem{filename_with_path, QDateTime::currentDateTime(), content});
+	instance().file_cache_.insert(id, StaticFile{filename_with_path, QDateTime::currentDateTime(), content, size});
 	instance().mutex_.unlock();
 }
 
@@ -34,7 +34,7 @@ void FileCache::removeFileFromCache(QString id)
 
 QString FileCache::getFileIdIfInCache(QString filename_with_path)
 {
-	QMapIterator<QString, CacheItem> i(instance().file_cache_);
+	QMapIterator<QString, StaticFile> i(instance().file_cache_);
 	while (i.hasNext()) {
 		i.next();
 		qDebug() << i.key() << ": " << i.value().filename_with_path;
@@ -49,7 +49,7 @@ QString FileCache::getFileIdIfInCache(QString filename_with_path)
 
 bool FileCache::isInCacheAlready(QString filename_with_path)
 {
-	QMapIterator<QString, CacheItem> i(instance().file_cache_);
+	QMapIterator<QString, StaticFile> i(instance().file_cache_);
 	while (i.hasNext()) {
 		i.next();
 		qDebug() << i.key() << ": " << i.value().filename_with_path;
@@ -62,11 +62,11 @@ bool FileCache::isInCacheAlready(QString filename_with_path)
 	return false;
 }
 
-CacheItem FileCache::getFileById(QString id)
+StaticFile FileCache::getFileById(QString id)
 {
 	if (instance().file_cache_.contains(id))
 	{
 		return instance().file_cache_[id];
 	}
-	return CacheItem{};
+	return StaticFile{};
 }

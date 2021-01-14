@@ -20,8 +20,7 @@ void EndpointManager::validateInputData(Endpoint* current_endpoint, Request requ
 {	
 	QMapIterator<QString, ParamProps> i(current_endpoint->params);
 	while (i.hasNext()) {
-		i.next();
-
+		i.next();		
 		bool is_found = false;
 
 		if(i.value().category == ParamProps::ParamCategory::POST_URL_ENCODED)
@@ -45,6 +44,14 @@ void EndpointManager::validateInputData(Endpoint* current_endpoint, Request requ
 				{
 					THROW(ArgumentException, i.key() + " parameter inside URL has an invalid type");
 				}
+			}
+		}
+
+		if(i.value().category == ParamProps::ParamCategory::PATH_PARAM)
+		{
+			if (request.path_params.size()>0)
+			{
+				is_found = true;
 			}
 		}
 

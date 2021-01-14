@@ -18,14 +18,14 @@ private slots:
 
 		IS_FALSE(FileCache::isInCacheAlready(filename));
 
-		FileCache::addFileToCache(generatedId, filename, content);
+		FileCache::addFileToCache(generatedId, filename, content, file.size());
 
 		QString foundId = FileCache::getFileIdIfInCache(filename);
 		S_EQUAL(foundId, generatedId);
 
 		IS_TRUE(FileCache::isInCacheAlready(filename));
 
-		CacheItem fileFromCache = FileCache::getFileById(foundId);
+		StaticFile fileFromCache = FileCache::getFileById(foundId);
 		S_EQUAL(fileFromCache.content, content);
 
 		FileCache::removeFileFromCache(foundId);

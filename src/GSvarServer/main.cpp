@@ -2,12 +2,13 @@
 #include <QDebug>
 #include <QFile>
 #include <QTextStream>
+#include <QCommandLineParser>
 #include "HttpsServer.h"
 #include "ServerHelper.h"
 #include "EndpointHelper.h"
 #include "EndpointHandler.h"
 
-
+int log_level = 3;
 QFile gsvar_server_log_file("gsvar-server-log.txt");
 
 void interceptLogMessage(QtMsgType type, const QMessageLogContext &, const QString &msg)
@@ -45,7 +46,6 @@ void interceptLogMessage(QtMsgType type, const QMessageLogContext &, const QStri
 	// 1: += info
 	// 2: += warning
 	// 3: += debug
-	int log_level = ServerHelper::getNumSettingsValue("log_level");
 	if (msg_level <= log_level)
 	{
 		printf("%s", qUtf8Printable(log_statement));
@@ -67,7 +67,34 @@ int main(int argc, char **argv)
 {
 	gsvar_server_log_file.open(QIODevice::WriteOnly | QIODevice::Append);
 	qInstallMessageHandler(interceptLogMessage);
+
 	QCoreApplication app(argc, argv);
+
+	QCommandLineParser parser;
+	parser.setApplicationDescription("GSvar file server");
+	parser.addHelpOption();
+	parser.addVersionOption();
+	QCommandLineOption serverPortOption(QStringList() << "p" << "port",
+			QCoreApplication::translate("main", "Server port number"),
+			QCoreApplication::translate("main", "port"));
+	parser.addOption(serverPortOption);
+	QCommandLineOption logLevelOption(QStringList() << "l" << "log",
+			QCoreApplication::translate("main", "Log level"),
+			QCoreApplication::translate("main", "logging"));
+	parser.addOption(logLevelOption);
+	parser.process(app);
+	QString port = parser.value(serverPortOption);
+	QString log_level_option = parser.value(logLevelOption);
+
+	if (!log_level_option.isEmpty())
+	{
+		qInfo() << "Log level parameter has been provided through the command line arguments:" << log_level_option.toInt();
+		log_level = log_level_option.toInt();
+	}
+	else {
+		qInfo() << "Using log level from the application settings";
+		log_level = ServerHelper::getNumSettingsValue("log_level");
+	}
 
 	EndpointManager::appendEndpoint(Endpoint{
 						"",
@@ -95,6 +122,28 @@ int main(int argc, char **argv)
 						"Static content served from the server root folder (defined in the config file)",
 						&EndpointHelper::serveStaticFile
 				   });
+	EndpointManager::appendEndpoint(Endpoint{
+						"cache",
+						QMap<QString, ParamProps>{
+						   {"filename", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::PATH_PARAM, false, "Name of the file to be served"}}
+						},
+						Request::MethodType::GET,
+						ContentType::TEXT_HTML,
+						"Static content served from the server cache",
+						&EndpointHelper::serveStaticFileFromCache
+				   });
+
+	EndpointManager::appendEndpoint(Endpoint{
+						"temp",
+						QMap<QString, ParamProps>{
+						   {"id", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::PATH_PARAM, false, "Unique id pointing to a file"}}
+						},
+						Request::MethodType::GET,
+						ContentType::TEXT_HTML,
+						"Static file served via secure temporary URL",
+						&EndpointHandler::serveTempUrl
+				   });
+
 
 	EndpointManager::appendEndpoint(Endpoint{
 						"help",
@@ -142,7 +191,18 @@ int main(int argc, char **argv)
 						&EndpointHandler::performLogout
 					});
 
-	HttpsServer sslserver(ServerHelper::getNumSettingsValue("server_port"));
+	int port_number = ServerHelper::getNumSettingsValue("server_port");
 
+	if (!port.isEmpty())
+	{
+		qInfo() << "Server port has been provided through the command line arguments:" << port.toInt();
+		port_number = port.toInt();
+	}
+	else {
+		qInfo() << "Using port number from the application settings";
+
+	}
+
+	HttpsServer sslserver(port_number);
 	return app.exec();
 }

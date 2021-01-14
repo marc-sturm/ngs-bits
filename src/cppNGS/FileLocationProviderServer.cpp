@@ -64,7 +64,7 @@ FileLocation FileLocationProviderServer::mapJsonObjectToFileLocation(QJsonObject
 {
 	return FileLocation {
 		obj.value("id").toString(),
-		FileLocationHelper::stringTopathType(obj.value("type").toString()),
+		FileLocationHelper::stringToPathType(obj.value("type").toString()),
 		obj.value("filename").toString(),
 		obj.value("is_found").toBool()
 	};
@@ -87,7 +87,7 @@ QList<FileLocation> FileLocationProviderServer::getBamFiles()
 
 QList<FileLocation> FileLocationProviderServer::getSegFilesCnv()
 {
-	return requestFileInfoByType(PathType::CNV_ESTIMATES);
+        return requestFileInfoByType(PathType::COPY_NUMBER_RAW_DATA);
 }
 
 QList<FileLocation> FileLocationProviderServer::getIgvFilesBaf()
