@@ -92,6 +92,7 @@ QT_CHARTS_USE_NAMESPACE
 #include "GeneOmimInfoWidget.h"
 #include "LoginManager.h"
 #include "LoginDialog.h"
+#include "RefGenDownloadDialog.h"
 #include "GeneInfoDBs.h"
 #include "VariantConversionWidget.h"
 #include "PasswordDialog.h"
@@ -239,16 +240,8 @@ void MainWindow::on_actionDebug_triggered()
 {
 	qDebug() << "Debug session";
 
-
-	GlobalServiceProvider::instance().setfileLocationsProvider(QSharedPointer<FileLocationProviderServer>(new FileLocationProviderServer(filename_, Settings::string("server_host"), Settings::integer("server_port"))));
-
-
-	GlobalServiceProvider::instance().fileLocationsProvider()->getBamFiles();
-//	QString res = HttpHandler(HttpRequestHandler::INI).get("http://localhost:80");
-//	qDebug() << res;
-
-
-
+	RefGenDownloadDialog dlg(this);
+	dlg.exec();
 
 	QString user = Helper::userName();
 	if (user=="ahsturm1")
@@ -2137,7 +2130,7 @@ void MainWindow::openProcessedSampleFromNGSD(QString processed_sample_name, bool
 }
 
 void MainWindow::openSampleFromNGSD(QString sample_name)
-{
+{	
 	try
 	{
 		NGSD db;
@@ -2386,6 +2379,9 @@ void MainWindow::on_actionChangeLog_triggered()
 
 void MainWindow::loadFile(QString filename)
 {	
+	qDebug() << "Open sample";
+	pullReferenceGenome();
+
 	//store variant list in case it changed
 	if (variants_changed_)
 	{
@@ -3669,6 +3665,11 @@ int MainWindow::igvPort() const
 	if (igv_port_manual>0) port = igv_port_manual;
 
 	return port;
+}
+
+void MainWindow::pullReferenceGenome()
+{
+	qDebug() << "Calling the pull function";
 }
 
 void MainWindow::on_actionOpenGeneTabByName_triggered()

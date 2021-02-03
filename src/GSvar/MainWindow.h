@@ -17,6 +17,7 @@
 #include "GlobalServiceProvider.h"
 #include "FileLocationProviderFileSystem.h"
 #include "FileLocationProviderServer.h"
+#include "RefGenDownloadWorker.h"
 
 
 
@@ -90,6 +91,9 @@ public:
 
 	///Returns the IGV port to use
 	int igvPort() const;
+
+	///Download refernce genome, if it is not found locally
+	void pullReferenceGenome();
 
 public slots:
 	///Loads a variant list. Unloads the variant list if no file name is given

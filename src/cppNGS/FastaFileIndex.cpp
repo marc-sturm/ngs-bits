@@ -12,36 +12,12 @@ FastaFileIndex::FastaFileIndex(QString fasta_file)
 	: fasta_name_(fasta_file)
 	, index_name_(fasta_file + ".fai")
 	, file_(fasta_file)
-{
+{	
 	if (!is_fasta_file_local(fasta_file))
 	{	
 		HttpHeaders add_headers;
 		add_headers.insert("Accept", "text/plain");
-		QString reply {};
-
-		bool need_retry = false;
-		for(int i = 0; i < 5; i++)
-		{
-
-
-			qDebug() << "GET request processing. Attempt #" + QString::number(i);
-
-			try
-			{
-				reply = HttpRequestHandler(HttpRequestHandler::NONE).get(index_name_, add_headers);
-
-			}
-			catch(Exception& e)
-			{
-				need_retry = true;
-			}
-
-			if (!need_retry)
-			{
-				break;
-			}
-		}
-
+		QString reply = HttpRequestHandler(HttpRequestHandler::NONE).get(index_name_, add_headers);
 		reply = reply.trimmed();
 		QList<QString> reply_lines = reply.split("\n");
 
@@ -55,8 +31,6 @@ FastaFileIndex::FastaFileIndex(QString fasta_file)
 			}
 			saveEntryToIndex(fields);
 		}
-
-
 	}
 	else {
 		//open FASTA file handle
@@ -124,40 +98,11 @@ Sequence FastaFileIndex::seq(const Chromosome& chr, bool to_upper) const
 		HttpHeaders add_headers;
 		add_headers.insert("Accept", "text/plain");
 		add_headers.insert("Range", byte_range.toLocal8Bit());
-
-
-
-
-
-		bool need_retry = false;
-		for(int i = 0; i < 5; i++)
-		{
-
-
-			qDebug() << "GET request processing. Attempt #" + QString::number(i);
-
-			try
-			{
-				output = HttpRequestHandler(HttpRequestHandler::NONE).get(fasta_name_, add_headers).toLocal8Bit().replace("\n", 1, "", 0);;
-
-			}
-			catch(Exception& e)
-			{
-				need_retry = true;
-			}
-
-			if (!need_retry)
-			{
-				break;
-			}
-		}
-
-
-
+		output = HttpRequestHandler(HttpRequestHandler::NONE).get(fasta_name_, add_headers).toLocal8Bit().replace("\n", 1, "", 0);
 	}
 
 	//output
-	if (to_upper) output = output.toUpper();	
+	if (to_upper) output = output.toUpper();
 	return output;
 }
 
@@ -209,34 +154,7 @@ Sequence FastaFileIndex::seq(const Chromosome& chr, int start, int length, bool 
 		HttpHeaders add_headers;
 		add_headers.insert("Accept", "text/plain");
 		add_headers.insert("Range", byte_range.toLocal8Bit());
-
-
-
-
-		bool need_retry = false;
-		for(int i = 0; i < 5; i++)
-		{
-
-
-			qDebug() << "GET request processing. Attempt #" + QString::number(i);
-
-			try
-			{
-				output = HttpRequestHandler(HttpRequestHandler::NONE).get(fasta_name_, add_headers).toLocal8Bit().replace("\n", 1, "", 0);
-
-			}
-			catch(Exception& e)
-			{
-				need_retry = true;
-			}
-
-			if (!need_retry)
-			{
-				break;
-			}
-		}
-
-
+		output = HttpRequestHandler(HttpRequestHandler::NONE).get(fasta_name_, add_headers).toLocal8Bit().replace("\n", 1, "", 0);
 	}
 
 	//output
