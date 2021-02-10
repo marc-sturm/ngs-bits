@@ -10,7 +10,6 @@
 #include <QInputDialog>
 #include <QApplication>
 #include <QAuthenticator>
-#include <QFile>
 #include <QPointer>
 #include <QHttpMultiPart>
 

@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QTableWidgetItem>
 #include "VcfFile.h"
+#include "VersatileFileInfo.h"
 #include "NGSD.h"
 #include "LoginManager.h"
 

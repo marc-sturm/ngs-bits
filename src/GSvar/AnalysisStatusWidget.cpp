@@ -8,7 +8,7 @@
 #include "cmath"
 #include "LoginManager.h"
 #include <QMenu>
-#include <QFileInfo>
+#include "VersatileFileInfo.h"
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMessageBox>
@@ -229,7 +229,7 @@ void AnalysisStatusWidget::refreshStatus()
 						QDateTime latest_mod;
 						foreach(QString file, files)
 						{
-							QFileInfo file_info(file);
+							VersatileFileInfo file_info(file);
 							QDateTime mod_time = file_info.lastModified();
 							if (latest_mod.isNull() || mod_time>latest_mod)
 							{

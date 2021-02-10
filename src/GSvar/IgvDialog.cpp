@@ -1,7 +1,6 @@
 #include "IgvDialog.h"
 #include "GUIHelper.h"
 #include <QCheckBox>
-#include <QFileInfo>
 
 IgvDialog::IgvDialog(QWidget *parent)
 	: QDialog(parent)

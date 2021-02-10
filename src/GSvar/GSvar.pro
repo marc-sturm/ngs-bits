@@ -9,8 +9,8 @@ RC_FILE	 = icon.rc
 SOURCES += main.cpp\
     MainWindow.cpp \
     ExternalToolDialog.cpp \
+    ProjectModeSwitcher.cpp \
     RefGenDownloadDialog.cpp \
-    RefGenDownloadWorker.cpp \
     ReportDialog.cpp \
     ReportWorker.cpp \
     TrioDialog.cpp \
@@ -102,8 +102,8 @@ SOURCES += main.cpp\
     GapClosingDialog.cpp
 HEADERS += MainWindow.h \
     ExternalToolDialog.h \
+    ProjectModeSwitcher.h \
     RefGenDownloadDialog.h \
-    RefGenDownloadWorker.h \
     ReportDialog.h \
     ReportWorker.h \
     TrioDialog.h \

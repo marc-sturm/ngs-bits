@@ -5,7 +5,6 @@
 #include <QProgressBar>
 #include <QDebug>
 #include <QKeyEvent>
-#include <QFileInfo>
 #include "ui_RefGenDownloadDialog.h"
 #include "Settings.h"
 #include "HttpHandler.h"

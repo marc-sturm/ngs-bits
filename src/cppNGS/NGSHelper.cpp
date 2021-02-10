@@ -101,7 +101,7 @@ void NGSHelper::createSampleOverview(QStringList in, QString out, int indel_wind
 		bool init = true;
 		foreach(QString filename, in)
 		{
-			auto file = Helper::openFileForReading(filename, false);
+			auto file = Helper::openVersatileFileForReading(filename, false);
 			while (!file->atEnd())
 			{
 				QString line = file->readLine();

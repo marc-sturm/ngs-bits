@@ -8,7 +8,7 @@
 #include "GUIHelper.h"
 #include "GSvarHelper.h"
 #include "DBSelector.h"
-#include <QFileInfo>
+#include "VersatileFileInfo.h"
 #include <QFileDialog>
 #include <QCompleter>
 #include <QMenu>
@@ -113,10 +113,10 @@ void FilterWidget::loadTargetRegions(QComboBox* box)
 
 	//load additional ROIs from settings
 	QStringList rois = Settings::stringList("target_regions", true);
-	std::sort(rois.begin(), rois.end(), [](const QString& a, const QString& b){return QFileInfo(a).fileName().toUpper() < QFileInfo(b).fileName().toUpper();});
+	std::sort(rois.begin(), rois.end(), [](const QString& a, const QString& b){return VersatileFileInfo(a).fileName().toUpper() < VersatileFileInfo(b).fileName().toUpper();});
 	foreach(const QString& roi_file, rois)
 	{
-		QFileInfo info(roi_file);
+		VersatileFileInfo info(roi_file);
 		box->addItem(info.fileName(), roi_file);
 	}
 
@@ -148,7 +148,7 @@ void FilterWidget::reloadSubpanelList()
 		{
 			if (file.endsWith("_amplicons.bed")) continue;
 
-			QString name = QFileInfo(file).fileName().replace(".bed", "");
+			QString name = VersatileFileInfo(file).fileName().replace(".bed", "");
 			subpanels_ << KeyValuePair(name, Helper::canonicalPath(file));
 		}
 	}
@@ -351,7 +351,7 @@ void FilterWidget::addRoiTemp()
 	if (filename=="") return;
 
 	//add to list
-	ui_.roi->addItem(QFileInfo(filename).fileName(), Helper::canonicalPath(filename));
+	ui_.roi->addItem(VersatileFileInfo(filename).fileName(), Helper::canonicalPath(filename));
 }
 
 void FilterWidget::removeRoi()
@@ -479,14 +479,14 @@ void FilterWidget::showTargetRegionDetails()
 
 	//create text
 	QStringList text;
-	text << "Target region: " + QFileInfo(roi).baseName();
+	text << "Target region: " + VersatileFileInfo(roi).baseName();
 	BedFile file;
 	file.load(roi);
 	text << "Regions: " + QString::number(file.count());
 	text << "Bases: " + QString::number(file.baseCount());
 	text << "";
 	QString genes_file = roi.left(roi.size()-4) + "_genes.txt";
-	if (QFile::exists(genes_file))
+	if (VersatileFileInfo(genes_file).exists())
 	{
 		GeneSet genes = GeneSet::createFromFile(genes_file);
 		text << "Genes: " + QString::number(genes.count());
@@ -512,7 +512,7 @@ void FilterWidget::updateGeneWarning()
 	if (roi!="")
 	{
 		QString genes_file = roi.left(roi.size()-4) + "_genes.txt";
-		if (QFile::exists(genes_file))
+		if (VersatileFileInfo(genes_file).exists())
 		{
 			GeneSet roi_genes = GeneSet::createFromFile(genes_file);
 

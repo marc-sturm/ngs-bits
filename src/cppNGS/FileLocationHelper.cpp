@@ -57,3 +57,13 @@ QString FileLocationHelper::getEvidenceFile(const QString& bam_file)
 	QString ps_name = bam_file_info.fileName().left(bam_file_info.fileName().length() - 4);
 	return evidence_dir.absoluteFilePath(ps_name + "_manta_evidence.bam");
 }
+
+QStringList FileLocationHelper::getFileLocationsAsStringList(const QList<FileLocation>& file_locations)
+{
+	QStringList output {};
+	for (int i = 0; i < file_locations.count(); i++)
+	{
+		output.append(file_locations[i].filename);
+	}
+	return output;
+}

@@ -20,12 +20,12 @@ GlobalServiceProvider& GlobalServiceProvider::instance()
 	return instance;
 }
 
-void GlobalServiceProvider::setfileLocationsProvider(QSharedPointer<FileLocationProvider> file_location_provider)
+void GlobalServiceProvider::setFileLocationProvider(QSharedPointer<FileLocationProvider> file_location_provider)
 {
 	instance().file_location_provider_ = file_location_provider;
 }
 
-const QSharedPointer<FileLocationProvider> GlobalServiceProvider::fileLocationsProvider()
+const QSharedPointer<FileLocationProvider> GlobalServiceProvider::fileLocationProvider()
 {
 	if (instance().file_location_provider_.isNull())
 	{

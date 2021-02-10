@@ -4,6 +4,7 @@
 #include "cppNGS_global.h"
 #include "Chromosome.h"
 #include "BasicStatistics.h"
+#include "VersatileFile.h"
 
 #include <QVector>
 #include <QSet>

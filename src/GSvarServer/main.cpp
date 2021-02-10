@@ -132,7 +132,6 @@ int main(int argc, char **argv)
 						"Static content served from the server cache",
 						&EndpointHelper::serveStaticFileFromCache
 				   });
-
 	EndpointManager::appendEndpoint(Endpoint{
 						"temp",
 						QMap<QString, ParamProps>{
@@ -143,8 +142,6 @@ int main(int argc, char **argv)
 						"Static file served via secure temporary URL",
 						&EndpointHandler::serveTempUrl
 				   });
-
-
 	EndpointManager::appendEndpoint(Endpoint{
 						"help",
 						QMap<QString, ParamProps>{
@@ -161,12 +158,35 @@ int main(int argc, char **argv)
 						"file_location",
 						QMap<QString, ParamProps> {
 						   {"ps", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::GET_URL_PARAM, false, "Sample id"}},
-						   {"type", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::GET_URL_PARAM, true, "Format of the requested file(s)"}}
+						   {"type", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::GET_URL_PARAM, true, "Format of the requested file(s)"}},
+						   {"path", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::GET_URL_PARAM, true, "Returns an absolute path on the server, if set to 'absolute'"}}
 						},
 						Request::MethodType::GET,
 						ContentType::APPLICATION_JSON,
 						"Retrieve file location information for scecific file types",
 						&EndpointHandler::locateFileByType
+					});
+
+	EndpointManager::appendEndpoint(Endpoint{
+						"project_file",
+						QMap<QString, ParamProps> {
+						   {"ps", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::GET_URL_PARAM, false, "Sample id"}}
+						},
+						Request::MethodType::GET,
+						ContentType::TEXT_PLAIN,
+						"Temporary URL leading to a specific project file (GSvar file)",
+						&EndpointHandler::locateProjectFile
+					});
+
+	EndpointManager::appendEndpoint(Endpoint{
+						"file_info",
+						QMap<QString, ParamProps> {
+						   {"file", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::GET_URL_PARAM, false, "Filename with its full path"}}
+						},
+						Request::MethodType::GET,
+						ContentType::APPLICATION_JSON,
+						"Detailed information about a specific file",
+						&EndpointHelper::getFileInfo
 					});
 
 	EndpointManager::appendEndpoint(Endpoint{

@@ -39,11 +39,11 @@ void ProcessingSystemWidget::updateGUI()
 	ui_.umi->setText(ps_data.umi_type);
 	QString roi_file = ps_data.target_file;
 	ui_.target_file->setText(roi_file);
-	if (!QFile::exists(roi_file)) ui_.target_file->setText(roi_file+" <font color=red>(file is missing!)</font>");
+	if (!VersatileFileInfo(roi_file).exists()) ui_.target_file->setText(roi_file+" <font color=red>(file is missing!)</font>");
 	ui_.genome->setText(ps_data.genome);
 
 	//###target region infos###
-	if (QFile::exists(roi_file))
+	if (VersatileFileInfo(roi_file).exists())
 	{
 		BedFile roi;
 		roi.load(roi_file);
@@ -51,7 +51,7 @@ void ProcessingSystemWidget::updateGUI()
 		ui_.roi_regions->setText(QString::number(roi.count(), 'f', 0));
 	}
 	QString genes_file = ps_data.target_gene_file;
-	if (QFile::exists(genes_file))
+	if (VersatileFileInfo(genes_file).exists())
 	{
 		GeneSet roi_genes = GeneSet::createFromFile(genes_file);
 		ui_.roi_genes->setText(QString::number(roi_genes.count(), 'f', 0));

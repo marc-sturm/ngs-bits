@@ -6,8 +6,8 @@
 #include "NGSHelper.h"
 #include "GUIHelper.h"
 #include <QDebug>
-#include <QFileInfo>
 #include <QMessageBox>
+#include "VersatileFile.h"
 
 GeneSelectorDialog::GeneSelectorDialog(QString sample_folder, QString sample_name, QWidget* parent)
 	: QDialog(parent)
@@ -79,10 +79,10 @@ void GeneSelectorDialog::updateGeneTable()
 		cnv_calls.merge();
 
 		//load skipped regions from SEG file
-		auto f = Helper::openFileForReading(seg_files[0]);
-		while(!f->atEnd())
+		VersatileFile versatile_file(seg_files[0]);
+		while(!versatile_file.atEnd())
 		{
-			QByteArray line = f->readLine();
+			QByteArray line = versatile_file.readLine();
 
 			//skip empty and comment lines
 			if (line.trimmed().isEmpty() || line.startsWith('#')) continue;

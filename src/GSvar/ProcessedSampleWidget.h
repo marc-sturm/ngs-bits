@@ -5,6 +5,7 @@
 
 #include <QWidget>
 #include <QLabel>
+#include "VersatileFileInfo.h"
 
 namespace Ui {
 class ProcessedSampleWidget;

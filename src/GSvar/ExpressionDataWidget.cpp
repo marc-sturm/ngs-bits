@@ -4,9 +4,9 @@
 #include "Helper.h"
 #include "GUIHelper.h"
 #include "FilterCascade.h"
-#include <QFile>
 #include <QMessageBox>
 #include "RepeatExpansionWidget.h"
+#include "VersatileFile.h"
 
 //NumericWidgetItem::NumericWidgetItem(QString text) :
 //	QTableWidgetItem(text)
@@ -116,11 +116,10 @@ void ExpressionDataWidget::loadExpressionData()
 {
 	//load TSV file
 	TsvFile expression_data;
-	QSharedPointer<QFile> expression_data_file = Helper::openFileForReading(tsv_filename_, false);
-
-	while (!expression_data_file->atEnd())
+	VersatileFile versatile_file(tsv_filename_, false);
+	while (!versatile_file.atEnd())
 	{
-		QString line = expression_data_file->readLine().trimmed();
+		QString line = versatile_file.readLine().trimmed();
 		if (line == "")
 		{
 			// skip empty lines

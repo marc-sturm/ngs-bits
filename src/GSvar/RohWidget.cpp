@@ -4,11 +4,11 @@
 #include "Exceptions.h"
 #include "GUIHelper.h"
 #include "VariantDetailsDockWidget.h"
+#include "VersatileFileInfo.h"
 #include "NGSD.h"
 #include "Settings.h"
 #include "GSvarHelper.h"
 #include <QMessageBox>
-#include <QFileInfo>
 #include <QBitArray>
 #include <QClipboard>
 #include <QMenu>
@@ -41,7 +41,7 @@ RohWidget::RohWidget(QString filename, FilterWidget* filter_widget, QWidget *par
 	connect(var_filters, SIGNAL(targetRegionChanged()), this, SLOT(variantFiltersChanged()));
 
 	//load ROH data file
-	QString path = QFileInfo(filename).absolutePath();
+	QString path = VersatileFileInfo(filename).absolutePath();
 	QStringList roh_files = Helper::findFiles(path, "*_rohs.tsv", false);
 	if (roh_files.count()==0)
 	{

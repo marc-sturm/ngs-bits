@@ -212,19 +212,19 @@ void ProcessedSampleWidget::updateGUI()
 		if (action->text() == "Add Manta evidence BAM track")
 		{
 			// check if evidence BAM file exists:
-			action->setEnabled(QFile::exists(GSvarHelper::getEvidenceFile(NGSD().processedSamplePath(ps_id_, NGSD::BAM))));
+			action->setEnabled(VersatileFileInfo(FileLocationHelper::getEvidenceFile(NGSD().processedSamplePath(ps_id_, PathType::BAM))).exists());
 		}
 		else if (action->text() == "Add SV track")
 		{
 			// check if evidence BAM file exists:
-			QString bam = NGSD().processedSamplePath(ps_id_, NGSD::BAM);
-			action->setEnabled(QFile::exists(bam.left(bam.length()-4) + "_manta_var_structural.vcf.gz"));
+			QString bam = NGSD().processedSamplePath(ps_id_, PathType::BAM);
+			action->setEnabled(VersatileFileInfo(bam.left(bam.length()-4) + "_manta_var_structural.vcf.gz").exists());
 		}
 		else if (action->text() == "Add BAF track")
 		{
 			// check if evidence BAM file exists:
-			QString bam = NGSD().processedSamplePath(ps_id_, NGSD::BAM);
-			action->setEnabled(QFile::exists(bam.left(bam.length()-4) + "_bafs.igv"));
+			QString bam = NGSD().processedSamplePath(ps_id_, PathType::BAM);
+			action->setEnabled(VersatileFileInfo(bam.left(bam.length()-4) + "_bafs.igv").exists());
 		}
 	};
 }
@@ -328,8 +328,8 @@ void ProcessedSampleWidget::showPlot()
 
 void ProcessedSampleWidget::openSampleFolder()
 {
-	QString folder = NGSD().processedSamplePath(ps_id_, NGSD::SAMPLE_FOLDER);
-	if(!QFile::exists(folder))
+	QString folder = NGSD().processedSamplePath(ps_id_, PathType::SAMPLE_FOLDER);	
+	if(!VersatileFileInfo(folder).exists())
 	{
 		QMessageBox::warning(this, "Error opening processed sample folder", "Folder does not exist:\n" + folder);
 		return;
@@ -569,14 +569,14 @@ void ProcessedSampleWidget::addCnvsToIgv()
 
 	QString base_name = bam.left(bam.length()-4);
 	QString segfile = base_name + "_cnvs_clincnv.seg";
-	if (QFile::exists(segfile))
+	if (VersatileFileInfo(segfile).exists())
 	{
 		executeIGVCommands(QStringList() << "load \"" + Helper::canonicalPath(segfile) + "\"");
 	}
 	else
 	{
 		segfile = base_name + "_cnvs.seg";
-		if (QFile::exists(segfile))
+		if (VersatileFileInfo(segfile).exists())
 		{
 			executeIGVCommands(QStringList() << "load \"" + Helper::canonicalPath(segfile) + "\"");
 		}

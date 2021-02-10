@@ -227,6 +227,38 @@ Response EndpointHelper::serveProtectedStaticFile(Request request)
 	return serveStaticFile(":/assets/client/example.png", ByteRange{}, ContentType::APPLICATION_OCTET_STREAM, true);
 }
 
+Response EndpointHelper::getFileInfo(Request request)
+{
+	qInfo() << "Getting file information";
+
+	QString filename = request.url_params["file"];
+	if (request.url_params["file"].toLower().startsWith("http"))
+	{
+		QList<QString> url_parts = request.url_params["file"].split("/");
+		if (url_parts.size() > 0)
+		{
+			UrlEntity current_entity = UrlManager::getURLById(url_parts[url_parts.size()-1]);
+			if (current_entity.filename_with_path.length()>0)
+			{
+				filename = current_entity.filename_with_path;
+			}
+		}
+	}
+
+
+
+	QJsonDocument json_doc_output {};
+	QJsonObject json_object {};
+	json_object.insert("absolute_path", QFileInfo(filename).absolutePath());
+	json_object.insert("base_name", QFileInfo(filename).baseName());
+	json_object.insert("file_name", QFileInfo(filename).fileName());
+	json_object.insert("last_modified", QString::number(QFileInfo(filename).lastModified().toSecsSinceEpoch()));
+	json_object.insert("exists", QFileInfo(filename).exists());
+
+	json_doc_output.setObject(json_object);
+	return Response{generateHeaders(json_doc_output.toJson().length(), ContentType::APPLICATION_JSON), json_doc_output.toJson()};
+}
+
 EndpointHelper::EndpointHelper()
 {
 }

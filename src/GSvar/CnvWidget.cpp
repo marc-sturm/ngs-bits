@@ -16,13 +16,11 @@
 #include "GeneInfoDBs.h"
 #include "ValidationDialog.h"
 #include <QMessageBox>
-#include <QFileInfo>
 #include <QBitArray>
 #include <QClipboard>
 #include <QMenu>
 #include <QDesktopServices>
 #include <QUrl>
-#include <QDir>
 #include <QInputDialog>
 #include <QChartView>
 QT_CHARTS_USE_NAMESPACE

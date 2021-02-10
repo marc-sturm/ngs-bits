@@ -14,10 +14,9 @@
 #include "GSvarHelper.h"
 #include "SomaticXmlReportGenerator.h"
 #include "SomaticVariantInterpreter.h"
+#include "VersatileFileInfo.h"
 
 #include <cmath>
-#include <QFileInfo>
-#include <QDir>
 #include <QMessageBox>
 #include <QSqlError>
 #include <QMap>
@@ -320,7 +319,7 @@ SomaticReportHelper::SomaticReportHelper(const VariantList& variants, const CnvL
 
 void SomaticReportHelper::germlineSnvForQbic()
 {
-	QString path_target_folder = QFileInfo(snv_filename_).absolutePath() + "/" + "QBIC_files/";
+	QString path_target_folder = VersatileFileInfo(snv_filename_).absolutePath() + "/" + "QBIC_files/";
 
 	if(!QDir(path_target_folder).exists())
 	{
@@ -342,7 +341,7 @@ void SomaticReportHelper::germlineSnvForQbic()
 
 void SomaticReportHelper::somaticSnvForQbic()
 {
-	QString path_target_folder = QFileInfo(snv_filename_).absolutePath() + "/" + "QBIC_files/";
+	QString path_target_folder = VersatileFileInfo(snv_filename_).absolutePath() + "/" + "QBIC_files/";
 
 	if(!QDir(path_target_folder).exists())
 	{
@@ -421,7 +420,7 @@ void SomaticReportHelper::somaticSnvForQbic()
 
 void SomaticReportHelper::germlineCnvForQbic()
 {
-	QString path_target_folder = QFileInfo(snv_filename_).absolutePath() + "/" + "QBIC_files/";
+	QString path_target_folder = VersatileFileInfo(snv_filename_).absolutePath() + "/" + "QBIC_files/";
 
 	if(!QDir(path_target_folder).exists())
 	{
@@ -442,7 +441,7 @@ void SomaticReportHelper::germlineCnvForQbic()
 
 void SomaticReportHelper::somaticCnvForQbic()
 {
-	QString path_target_folder = QFileInfo(snv_filename_).absolutePath() + "/" + "QBIC_files/";
+	QString path_target_folder = VersatileFileInfo(snv_filename_).absolutePath() + "/" + "QBIC_files/";
 
 	if(!QDir(path_target_folder).exists())
 	{
@@ -555,7 +554,7 @@ void SomaticReportHelper::somaticCnvForQbic()
 
 void SomaticReportHelper::somaticSvForQbic()
 {
-	QString path_target_folder = QFileInfo(snv_filename_).absolutePath() + "/" + "QBIC_files/";
+	QString path_target_folder = VersatileFileInfo(snv_filename_).absolutePath() + "/" + "QBIC_files/";
 
 	if(!QDir(path_target_folder).exists())
 	{
@@ -574,7 +573,7 @@ void SomaticReportHelper::somaticSvForQbic()
 
 void SomaticReportHelper::metaDataForQbic()
 {
-	QString path_target_folder = QFileInfo(snv_filename_).absolutePath() + "/" + "QBIC_files/";
+	QString path_target_folder = VersatileFileInfo(snv_filename_).absolutePath() + "/" + "QBIC_files/";
 
 	if(!QDir(path_target_folder).exists())
 	{

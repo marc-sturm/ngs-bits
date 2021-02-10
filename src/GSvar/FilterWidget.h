@@ -7,6 +7,7 @@
 #include "GeneSet.h"
 #include "PhenotypeList.h"
 #include "FilterCascade.h"
+#include "VersatileFileInfo.h"
 
 //Filter settings for report configuration
 enum class ReportConfigFilter

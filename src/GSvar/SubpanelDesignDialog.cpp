@@ -6,8 +6,8 @@
 #include "Helper.h"
 #include "NGSHelper.h"
 #include "GSvarHelper.h"
+#include "VersatileFileInfo.h"
 #include <QPushButton>
-#include <QFileInfo>
 #include <QMessageBox>
 #include <QInputDialog>
 #include <GUIHelper.h>
@@ -54,7 +54,7 @@ QStringList SubpanelDesignDialog::subpanelList()
 	{
 		if(t.endsWith("_amplicons.bed")) continue;
 
-		names.append(QFileInfo(t).fileName().replace(".bed", ""));
+		names.append(VersatileFileInfo(t).fileName().replace(".bed", ""));
 	}
 
 	return names;
@@ -193,7 +193,7 @@ void SubpanelDesignDialog::storePanel()
 	genes.store(gene_file);
 
 	clearMessages();
-	addMessage("Sub-panel '" + QFileInfo(roi_file).baseName() + "' written successfully!", false, true);
+	addMessage("Sub-panel '" + VersatileFileInfo(roi_file).baseName() + "' written successfully!", false, true);
 	disableStoreButton();
 
 	last_created_subpanel = roi_file;

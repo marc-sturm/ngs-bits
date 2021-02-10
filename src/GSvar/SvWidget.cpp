@@ -1,4 +1,3 @@
-#include <QFileInfo>
 #include <QLabel>
 #include <QMessageBox>
 #include <QClipboard>

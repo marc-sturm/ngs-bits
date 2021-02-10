@@ -78,7 +78,7 @@ QString SingleSampleAnalysisDialog::addSample(NGSD& db, QString status, QList<Sa
 	if (throw_if_bam_missing)
 	{
 		QString bam = db.processedSamplePath(ps_id, PathType::BAM);
-		if (!QFile::exists(bam))
+		if (!VersatileFileInfo(bam).exists())
 		{
 			THROW(FileAccessException, "Sample BAM file does not exist: '" + bam);
 		}

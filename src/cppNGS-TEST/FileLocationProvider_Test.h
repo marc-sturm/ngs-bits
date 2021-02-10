@@ -1,6 +1,6 @@
 #include "TestFramework.h"
 #include "FileLocationProvider.h"
-#include "FileLocationProviderFileSystem.h"
+#include "FileLocationProviderLocal.h"
 
 TEST_CLASS(FileLocationProvider_Test)
 {
@@ -16,13 +16,13 @@ private slots:
 
 		SampleHeaderInfo emptyHeader {};
 
-		FileLocationProviderFileSystem fp = FileLocationProviderFileSystem("", vl.getSampleHeader(), vl.type());
+		FileLocationProviderLocal fp = FileLocationProviderLocal("", vl.getSampleHeader(), vl.type());
 		IS_THROWN(ArgumentException, fp.getBamFiles());
 
-		fp = FileLocationProviderFileSystem(filename, emptyHeader, vl.type());
+		fp = FileLocationProviderLocal(filename, emptyHeader, vl.type());
 		IS_THROWN(ArgumentException, fp.getBamFiles());
 
-		fp = FileLocationProviderFileSystem(filename, vl.getSampleHeader(), vl.type());
+		fp = FileLocationProviderLocal(filename, vl.getSampleHeader(), vl.type());
 		QString sample_folder = QFileInfo(filename).absolutePath();
 		QString project_folder = QFileInfo(sample_folder).absolutePath();
 
@@ -46,7 +46,7 @@ private slots:
 		// Multi
 		filename = "data_in/VariantFilter_in_multi.GSvar";
 		vl.load(TESTDATA("data_in/VariantFilter_in_multi.GSvar"));
-		fp = FileLocationProviderFileSystem(filename, vl.getSampleHeader(), vl.type());
+		fp = FileLocationProviderLocal(filename, vl.getSampleHeader(), vl.type());
 
 		bam_files = fp.getBamFiles();
 		I_EQUAL(bam_files.length(), 4);

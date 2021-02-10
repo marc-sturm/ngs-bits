@@ -1,4 +1,3 @@
-#include <QDir>
 #include <QDebug>
 #include <QPushButton>
 #include <QTimer>
@@ -13,6 +12,7 @@
 #include "NGSD.h"
 #include "Settings.h"
 #include "GenLabDB.h"
+#include "VersatileFile.h"
 
 #include "ui_SomaticDataTransferWidget.h"
 
@@ -74,10 +74,8 @@ void SomaticDataTransferWidget::uploadXML()
 		{
 			HttpHeaders add_headers;
 			add_headers.insert("Content-Type", "application/xml");
-
-			QSharedPointer<QFile> file = Helper::openFileForReading(xml_path_);
-			res =  http_handler_.post(xml_url_ + "/mtb_imgag", file->readAll(), add_headers);
-			file->close();
+			VersatileFile versatile_file(xml_path_);
+			res =  http_handler_.post(xml_url_ + "/mtb_imgag", versatile_file.readAll(), add_headers);
 		}
 		catch(Exception& e)
 		{

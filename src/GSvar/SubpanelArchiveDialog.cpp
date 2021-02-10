@@ -3,9 +3,9 @@
 #include "Settings.h"
 #include "Helper.h"
 #include "NGSD.h"
+#include "VersatileFileInfo.h"
 #include <QDesktopServices>
 #include <QUrl>
-#include <QFileInfo>
 #include <QMessageBox>
 
 SubpanelArchiveDialog::SubpanelArchiveDialog(QWidget *parent)
@@ -73,7 +73,7 @@ void SubpanelArchiveDialog::updateSubpanelList(QListWidget* list, QString path, 
 			if (!GeneSet::createFromFile(genes_file).containsAll(f_genes)) continue;
 		}
 
-		QString name = QFileInfo(file).fileName().replace(".bed", "");
+		QString name = VersatileFileInfo(file).fileName().replace(".bed", "");
 		list->addItem(name);
 	}
 }

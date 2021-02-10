@@ -7,6 +7,7 @@
 #include "GeneSet.h"
 #include "Phenotype.h"
 #include "FilterWidget.h"
+#include "VersatileFileInfo.h"
 
 //Filter manager dock widget
 class FilterWidgetSV

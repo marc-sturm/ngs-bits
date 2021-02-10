@@ -5,20 +5,8 @@
 #include "cppNGS_global.h"
 #include "VariantList.h"
 #include "qfileinfo.h"
+#include "Helper.h"
 #include "FileLocationHelper.h"
-
-struct FileLocation
-{
-	QString id; //sample identifier/name
-	PathType type; //file type
-	QString filename; //file name
-	bool is_found; // indicates if a file exists or not
-
-	bool operator == (const FileLocation& x) const
-	{
-	  return (id == x.id && type == x.type && filename == x.filename);
-	}
-};
 
 class CPPNGSSHARED_EXPORT FileLocationProvider
 {
@@ -30,6 +18,15 @@ public:
 	virtual QList<FileLocation> getSegFilesCnv() = 0;
 	virtual QList<FileLocation> getIgvFilesBaf() = 0;
 	virtual QList<FileLocation> getMantaEvidenceFiles() = 0;
+
+	virtual QList<FileLocation> getAnalysisLogFiles() = 0;
+	virtual QList<FileLocation> getCircosPlotFiles() = 0;
+	virtual QList<FileLocation> getVcfGzFiles() = 0;
+	virtual QList<FileLocation> getExpansionhunterVcfFiles() = 0;
+	virtual QList<FileLocation> getPrsTsvFiles() = 0;
+	virtual QList<FileLocation> getClincnvTsvFiles() = 0;
+	virtual QList<FileLocation> getLowcovBedFiles() = 0;
+
 private:
 	VariantList variants;
 	QString filename;

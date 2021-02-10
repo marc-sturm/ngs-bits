@@ -4,13 +4,12 @@
 #include<QSharedPointer>
 #include "FileLocationProvider.h"
 
-
 class GlobalServiceProvider
 {
 public:
 	static GlobalServiceProvider& instance();
-	static void setfileLocationsProvider(QSharedPointer<FileLocationProvider> file_location_provider);
-	static const QSharedPointer<FileLocationProvider> fileLocationsProvider();
+	static void setFileLocationProvider(QSharedPointer<FileLocationProvider> file_location_provider);
+	static const QSharedPointer<FileLocationProvider> fileLocationProvider();
 
 protected:
 	GlobalServiceProvider();

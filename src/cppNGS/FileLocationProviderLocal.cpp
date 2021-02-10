@@ -1,13 +1,13 @@
-#include "FileLocationProviderFileSystem.h"
+#include "FileLocationProviderLocal.h"
 
-FileLocationProviderFileSystem::FileLocationProviderFileSystem(QString gsvar_file, const SampleHeaderInfo header_info, const AnalysisType analysis_type)
+FileLocationProviderLocal::FileLocationProviderLocal(QString gsvar_file, const SampleHeaderInfo header_info, const AnalysisType analysis_type)
   : gsvar_file_(gsvar_file)
   , header_info_(header_info)
   , analysis_type_(analysis_type)
 {
 }
 
-void FileLocationProviderFileSystem::setIsFoundFlag(FileLocation& file)
+void FileLocationProviderLocal::setIsFoundFlag(FileLocation& file)
 {
 	file.is_found = false;
 	if (QFile::exists(file.filename))
@@ -16,7 +16,7 @@ void FileLocationProviderFileSystem::setIsFoundFlag(FileLocation& file)
 	}
 }
 
-QList<FileLocation> FileLocationProviderFileSystem::getBamFiles()
+QList<FileLocation> FileLocationProviderLocal::getBamFiles()
 {
 	QList<FileLocation> output;
 
@@ -53,7 +53,7 @@ QList<FileLocation> FileLocationProviderFileSystem::getBamFiles()
 	return output;
 }
 
-QList<FileLocation> FileLocationProviderFileSystem::getSegFilesCnv()
+QList<FileLocation> FileLocationProviderLocal::getSegFilesCnv()
 {
 	QList<FileLocation> output;
 
@@ -104,7 +104,7 @@ QList<FileLocation> FileLocationProviderFileSystem::getSegFilesCnv()
 	return output;
 }
 
-QList<FileLocation> FileLocationProviderFileSystem::getIgvFilesBaf()
+QList<FileLocation> FileLocationProviderLocal::getIgvFilesBaf()
 {
 	QList<FileLocation> output;
 	if (analysis_type_==SOMATIC_PAIR)
@@ -127,7 +127,7 @@ QList<FileLocation> FileLocationProviderFileSystem::getIgvFilesBaf()
 	return output;
 }
 
-QList<FileLocation> FileLocationProviderFileSystem::getMantaEvidenceFiles()
+QList<FileLocation> FileLocationProviderLocal::getMantaEvidenceFiles()
 {
 	QList<FileLocation> evidence_files;
 	// search at location of all available BAM files
@@ -141,3 +141,106 @@ QList<FileLocation> FileLocationProviderFileSystem::getMantaEvidenceFiles()
 	}
 	return evidence_files;
 }
+
+QList<FileLocation> FileLocationProviderLocal::getAnalysisLogFiles()
+{
+	return QList<FileLocation>{};
+}
+
+QList<FileLocation> FileLocationProviderLocal::getCircosPlotFiles()
+{
+	QString path = QFileInfo(gsvar_file_).absolutePath();
+	QStringList files = Helper::findFiles(path, "*_circos.png", false);
+	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::CIRCOS_PLOT);
+
+	return output;
+}
+
+QList<FileLocation> FileLocationProviderLocal::getVcfGzFiles()
+{
+	QString folder = QFileInfo(gsvar_file_).absolutePath();
+	QStringList files = Helper::findFiles(folder, "*_var_annotated.vcf.gz", false);
+	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::VCF_GZ);
+
+	return output;
+}
+
+QList<FileLocation> FileLocationProviderLocal::getExpansionhunterVcfFiles()
+{
+	QString path = QFileInfo(gsvar_file_).absolutePath();
+	QStringList files = Helper::findFiles(path, processedSampleName() + "_repeats_expansionhunter.vcf", false);
+	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::REPEATS_EXPANSION_HUNTER_VCF);
+
+	return output;
+}
+
+QList<FileLocation> FileLocationProviderLocal::getPrsTsvFiles()
+{
+	QString path = QFileInfo(gsvar_file_).absolutePath();
+	QStringList files = Helper::findFiles(path, processedSampleName() + "_prs.tsv", false);
+	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::PRS_TSV);
+
+	return output;
+}
+
+QList<FileLocation> FileLocationProviderLocal::getClincnvTsvFiles()
+{
+	QStringList files = Helper::findFiles(QFileInfo(gsvar_file_).absolutePath(), "*_clincnv.tsv", false);
+	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::CLINCNV_TSV);
+
+	return output;
+}
+
+QList<FileLocation> FileLocationProviderLocal::getLowcovBedFiles()
+{
+	QString folder = QFileInfo(gsvar_file_).absolutePath();
+	QStringList files = Helper::findFiles(folder, "*_lowcov.bed", false);
+	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::LOWCOV_BED);
+
+	return output;
+}
+
+QString FileLocationProviderLocal::processedSampleName()
+{
+	switch(analysis_type_)
+	{
+		case GERMLINE_SINGLESAMPLE:
+			return QFileInfo(gsvar_file_).baseName();
+			break;
+		case GERMLINE_TRIO: //return index (child)
+		return header_info_.infoByStatus(true).column_name;
+			break;
+		case GERMLINE_MULTISAMPLE: //return affected if there is exactly one affected
+		try
+		{
+			SampleInfo info = header_info_.infoByStatus(true);
+			return info.column_name;
+		}
+		catch(...) {} //Nothing to do here
+			break;
+		case SOMATIC_SINGLESAMPLE:
+			break;
+		case SOMATIC_PAIR:
+			return QFileInfo(gsvar_file_).baseName().split("-")[0];
+			break;
+	}
+
+	return "";
+}
+
+QList<FileLocation> FileLocationProviderLocal::mapFoundFilesToFileLocation(QStringList& files, PathType type)
+{
+	QList<FileLocation> output {};
+	for (int i = 0; i < files.count(); i++)
+	{
+		FileLocation current_location;
+		current_location.id = "";
+		current_location.type = type;
+		current_location.filename = files[i];
+		current_location.is_found = true;
+
+		output.append(current_location);
+	}
+	return output;
+}
+

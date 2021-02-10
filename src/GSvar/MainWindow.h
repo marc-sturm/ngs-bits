@@ -15,11 +15,11 @@
 #include "SomaticReportSettings.h"
 
 #include "GlobalServiceProvider.h"
-#include "FileLocationProviderFileSystem.h"
-#include "FileLocationProviderServer.h"
-#include "RefGenDownloadWorker.h"
-
-
+#include "FileLocationProviderLocal.h"
+#include "FileLocationProviderRemote.h"
+#include "VersatileFile.h"
+#include "VersatileFileInfo.h"
+#include "ApiRequestHandler.h"
 
 ///Main window class
 class MainWindow
@@ -403,8 +403,7 @@ private:
 	QList<QSharedPointer<QDialog>> modeless_dialogs_;
 	QLabel* notification_label_;
 
-	//DATA
-	bool is_local_project_;
+	//DATA	
 	QString filename_;
 	FileWatcher filewatcher_;
 	bool igv_initialized_;

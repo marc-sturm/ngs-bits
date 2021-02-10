@@ -6,6 +6,7 @@
 #include "Statistics.h"
 #include "LoginManager.h"
 #include "GSvarHelper.h"
+#include "VersatileFileInfo.h"
 
 TumorOnlyReportWorker::TumorOnlyReportWorker(const VariantList& variants, const TumorOnlyReportWorkerConfig& config)
 	: variants_(variants)
@@ -209,7 +210,7 @@ void TumorOnlyReportWorker::writeRtf(QByteArray file_path)
 
 
 	//gap statistics if target file exists
-	if(QFileInfo::exists(target_file_) && QFileInfo::exists(low_cov_file_))
+	if(VersatileFileInfo(target_file_).exists() && VersatileFileInfo(low_cov_file_).exists())
 	{
 		BedFile roi;
 		roi.load(target_file_);
@@ -225,7 +226,7 @@ void TumorOnlyReportWorker::writeRtf(QByteArray file_path)
 
 		doc_.addPart(RtfParagraph("Statistik:").setBold(true).setSpaceAfter(45).setSpaceBefore(45).setFontSize(16).RtfCode());
 		RtfTable table;
-		table.addRow( RtfTableRow( {"Zielregion:", QFileInfo(target_file_).fileName().toUtf8()} , {1700,7938} ) );
+		table.addRow( RtfTableRow( {"Zielregion:", VersatileFileInfo(target_file_).fileName().toUtf8()} , {1700,7938} ) );
 
 		if(!genes_in_roi.isEmpty())
 		{

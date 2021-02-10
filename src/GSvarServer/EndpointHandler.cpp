@@ -115,7 +115,7 @@ Response EndpointHandler::serveTempUrl(Request request)
 Response EndpointHandler::locateFileByType(Request request)
 {
 	qDebug() << "File location service";
-	QString path = ServerHelper::getStringSettingsValue("sample_data");
+	QString path = ServerHelper::getStringSettingsValue("projects_folder");
 	QString found_file = getGSvarFile(request.url_params["ps"], false);
 
 	if (found_file.isEmpty())
@@ -126,7 +126,7 @@ Response EndpointHandler::locateFileByType(Request request)
 	VariantList variants {};
 	variants.load(found_file);
 
-	FileLocationProviderFileSystem* file_locator = new FileLocationProviderFileSystem(found_file, variants.getSampleHeader(), variants.type());
+	FileLocationProviderLocal* file_locator = new FileLocationProviderLocal(found_file, variants.getSampleHeader(), variants.type());
 
 	QList<FileLocation> file_list {};
 	QJsonDocument json_doc_output {};
@@ -149,12 +149,12 @@ Response EndpointHandler::locateFileByType(Request request)
 
 		default:
 			{
-				QJsonObject gsvar_file_json {};
-				gsvar_file_json.insert("id", request.url_params["ps"]);
-				gsvar_file_json.insert("type", FileLocationHelper::pathTypeToString(PathType::GSVAR));
-				gsvar_file_json.insert("filename", found_file);
-				gsvar_file_json.insert("is_found", true);
-				json_list_output.append(gsvar_file_json);
+				FileLocation gsvar_file {};
+				gsvar_file.id = request.url_params["ps"];
+				gsvar_file.type = PathType::GSVAR;
+				gsvar_file.filename = found_file;
+				gsvar_file.is_found = true;
+				file_list.append(gsvar_file);
 			}
 	}
 
@@ -164,15 +164,35 @@ Response EndpointHandler::locateFileByType(Request request)
 		QJsonObject cur_json_item {};
 		cur_json_item.insert("id", file_list[i].id);
 		cur_json_item.insert("type", FileLocationHelper::pathTypeToString(file_list[i].type));
-//		cur_json_item.insert("filename", file_list[i].filename);
-		cur_json_item.insert("filename", createTempUrl(file_list[i]));
-		cur_json_item.insert("is_found", file_list[i].is_found);
+		bool needs_url = true;
+		if (request.url_params.contains("path"))
+		{
+			if (request.url_params["path"].toLower() == "absolute") needs_url = false;
 
+		}
+		if (needs_url)
+		{
+			cur_json_item.insert("filename", createTempUrl(file_list[i].filename));
+		}
+		else
+		{
+			cur_json_item.insert("filename", file_list[i].filename);
+		}
+
+		cur_json_item.insert("is_found", file_list[i].is_found);
 		json_list_output.append(cur_json_item);
 	}
 
 	json_doc_output.setArray(json_list_output);
 	return Response{EndpointHelper::generateHeaders(json_doc_output.toJson().length(), ContentType::APPLICATION_JSON), json_doc_output.toJson()};
+}
+
+Response EndpointHandler::locateProjectFile(Request request)
+{
+	qDebug() << "Project file location";
+	QString found_file = getGSvarFile(request.url_params["ps"], false);
+	found_file = createTempUrl(found_file);
+	return Response{EndpointHelper::generateHeaders(found_file.length(), ContentType::TEXT_PLAIN), found_file.toLocal8Bit()};
 }
 
 Response EndpointHandler::performLogin(Request request)
@@ -218,10 +238,10 @@ Response EndpointHandler::performLogout(Request request)
 	return WebEntity::createError(ErrorType::FORBIDDEN, request.return_type, "You have provided an invalid token");
 }
 
-QString EndpointHandler::createTempUrl(FileLocation file)
+QString EndpointHandler::createTempUrl(QString filename)
 {
 	QString id = ServerHelper::generateUniqueStr();
-	UrlManager::addUrlToStorage(id, file.filename);
+	UrlManager::addUrlToStorage(id, filename);
 	return ServerHelper::getStringSettingsValue("server_host") +
 			+ ":" + ServerHelper::getStringSettingsValue("server_port") +
 			+ "/v1/temp/" + id;

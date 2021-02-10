@@ -96,7 +96,7 @@ void DiseaseCourseWidget::loadVariantLists()
 	QString panel_folder = Settings::path("patient_specific_panel_folder", false);
 	QString vcf_file_path = panel_folder + "/" + system_name + "/" + tumor_sample_name_ + ".vcf";
 
-	if (!QFile::exists(vcf_file_path)) THROW(FileAccessException, "Could not find reference tumor VCF in '" + vcf_file_path + "'! ");
+	if (!VersatileFileInfo(vcf_file_path).exists()) THROW(FileAccessException, "Could not find reference tumor VCF in '" + vcf_file_path + "'! ");
 
 	// create ref tumor column
 	ref_column_.variants.load(vcf_file_path);
@@ -111,7 +111,7 @@ void DiseaseCourseWidget::loadVariantLists()
 		cf_dna_column.name = db_.processedSampleName(ps_id);
 		cf_dna_column.date = QDate::fromString(db_.getSampleData(db_.sampleId(cf_dna_column.name)).received, "dd.MM.yyyy");
                 QString cf_dna_vcf_path = db_.processedSamplePath(ps_id, PathType::SAMPLE_FOLDER) + "/" + cf_dna_column.name + "_var.vcf";
-		if (!QFile::exists(cf_dna_vcf_path))
+		if (!VersatileFileInfo(cf_dna_vcf_path).exists())
 		{
 			QMessageBox::warning(this, "File not found", "Could not find cfDNA VCF for processed Sample " + cf_dna_column.name + "! ");
 		}

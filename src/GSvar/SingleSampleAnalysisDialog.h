@@ -4,6 +4,7 @@
 #include <QDialog>
 #include "NGSD.h"
 #include "ui_SingleSampleAnalysisDialog.h"
+#include "VersatileFileInfo.h"
 
 struct SampleDetails
 {

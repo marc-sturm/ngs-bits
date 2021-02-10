@@ -7,11 +7,9 @@
 #include "GUIHelper.h"
 #include "GSvarHelper.h"
 #include "LoginManager.h"
-#include <QFileInfo>
 #include <QCompleter>
 #include <QMenu>
 #include <QDialog>
-#include <QDir>
 #include <QMessageBox>
 
 FilterWidgetCNV::FilterWidgetCNV(QWidget *parent)
@@ -379,7 +377,7 @@ void FilterWidgetCNV::checkForGeneFileNGSD()
 {
 	// checks if gene file for target region is available and connection to the NGSD exists
 	QString gene_file_path = targetRegion().left(targetRegion().size() - 4) + "_genes.txt";
-	ui_.calculate_gene_overlap->setEnabled(QFile::exists(gene_file_path) && LoginManager::active());
+	ui_.calculate_gene_overlap->setEnabled(VersatileFileInfo(gene_file_path).exists() && LoginManager::active());
 }
 
 void FilterWidgetCNV::loadFilters()

@@ -6,6 +6,7 @@
 #include "SessionManager.h"
 #include "FileCache.h"
 #include "EndpointManager.h"
+#include "UrlManager.h"
 
 
 class CPPRESTSHARED_EXPORT EndpointHelper
@@ -25,6 +26,7 @@ public:
 	static Response serveStaticFile(Request request);
 	static Response serveStaticFileFromCache(Request request);
 	static Response serveProtectedStaticFile(Request request);
+	static Response getFileInfo(Request request);
 
 protected:
 	EndpointHelper();

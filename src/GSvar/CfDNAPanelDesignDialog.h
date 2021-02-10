@@ -10,6 +10,7 @@
 #include "Settings.h"
 #include "Exceptions.h"
 #include "DBComboBox.h"
+#include "VersatileFileInfo.h"
 
 struct GeneEntry
 {
