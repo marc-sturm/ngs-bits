@@ -38,14 +38,10 @@ QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN\'"
 
 SOURCES += BedFile.cpp \
     Chromosome.cpp \
-    DirInfoProviderFileSystem.cpp \
-    DirInfoProviderServer.cpp \
-    FileInfoProviderLocal.cpp \
-    FileInfoProviderRemote.cpp \
-    FileLocationProviderLocal.cpp \
-    FileLocationProviderRemote.cpp \
     VariantList.cpp \
     Statistics.cpp \
+    FileLocationProviderLocal.cpp \
+    FileLocationProviderRemote.cpp \
     Pileup.cpp \
     NGSHelper.cpp \
     FastqFileStream.cpp \
@@ -80,12 +76,6 @@ SOURCES += BedFile.cpp \
 
 HEADERS += BedFile.h \
     Chromosome.h \
-    DirInfoProvider.h \
-    DirInfoProviderFileSystem.h \
-    DirInfoProviderServer.h \
-    FileInfoProvider.h \
-    FileInfoProviderLocal.h \
-    FileInfoProviderRemote.h \
     FileLocation.h \
     FileLocationProviderLocal.h \
     FileLocationProviderRemote.h \

@@ -802,7 +802,7 @@ void MainWindow::on_actionCNV_triggered()
 	connect(list, SIGNAL(openRegionInIGV(QString)), this, SLOT(openInIGV(QString)));
 	connect(list, SIGNAL(openGeneTab(QString)), this, SLOT(openGeneTab(QString)));
 	connect(list, SIGNAL(storeSomaticReportConfiguration()), this, SLOT(storeSomaticReportConfig()));
-	auto dlg = GUIHelper::createDialog(list, "Copy number variants of " + processedSampleName());
+	auto dlg = GUIHelper::createDialog(list, "Copy number variants of " + GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName());
 	addModelessDialog(dlg, true);
 
 	//mosaic CNVs
@@ -845,17 +845,10 @@ void MainWindow::on_actionROH_triggered()
 	if (filename_=="" || variants_.type()==GERMLINE_MULTISAMPLE) return;
 
 	//trios special handling
-	QString filename = filename_;
 	if (variants_.type()==GERMLINE_TRIO)
-	{
-		//show ROHs of child (index)
-		QString child = variants_.getSampleHeader().infoByStatus(true).column_name;
-		QString trio_folder = VersatileFileInfo(filename_).absolutePath();
-		QString project_folder = VersatileFileInfo(filename_).absolutePath();
-		filename = project_folder + "/Sample_" + child + "/" + child + ".GSvar";
-
-		//UPDs
-		QString upd_file = trio_folder + "/trio_upd.tsv";
+	{		
+		//UPDs		
+		QString upd_file = GlobalServiceProvider::instance().fileLocationProvider()->getProjectAbsolutePath() + "/trio_upd.tsv";
 		if (!VersatileFileInfo(upd_file).exists())
 		{
 			QMessageBox::warning(this, "UPD detection", "The UPD file is missing!\n" + upd_file);
@@ -885,9 +878,9 @@ void MainWindow::on_actionROH_triggered()
 		}
 	}
 
-	RohWidget* list = new RohWidget(filename, ui_.filters);
+	RohWidget* list = new RohWidget(ui_.filters);
 	connect(list, SIGNAL(openRegionInIGV(QString)), this, SLOT(openInIGV(QString)));
-	auto dlg = GUIHelper::createDialog(list, "Runs of homozygosity of " + processedSampleName());
+	auto dlg = GUIHelper::createDialog(list, "Runs of homozygosity of " + GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName());
 	addModelessDialog(dlg);
 }
 
@@ -896,8 +889,7 @@ void MainWindow::on_actionGeneSelector_triggered()
 	if (filename_=="") return;
 
 	//show dialog
-	QString sample_folder = VersatileFileInfo(filename_).absolutePath();
-	GeneSelectorDialog dlg(sample_folder, processedSampleName(), this);
+	GeneSelectorDialog dlg(GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName(), this);
 	connect(&dlg, SIGNAL(openRegionInIGV(QString)), this, SLOT(openInIGV(QString)));
 	if (dlg.exec())
 	{
@@ -955,7 +947,7 @@ void MainWindow::on_actionRE_triggered()
 	if (filename_=="") return;
 
 	// determine repeat expansion file name
-	QString re_file_name = VersatileFileInfo(filename_).absolutePath() + "/" + processedSampleName() +  "_repeats_expansionhunter.vcf";
+	QString re_file_name = GlobalServiceProvider::instance().fileLocationProvider()->getProjectAbsolutePath() + "/" + GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName() +  "_repeats_expansionhunter.vcf";
 
 	if (VersatileFileInfo(re_file_name).exists())
 	{
@@ -964,13 +956,13 @@ void MainWindow::on_actionRE_triggered()
 		if (LoginManager::active())
 		{
 			NGSD db;
-			QString ps_id = db.processedSampleId(processedSampleName(), false);
+			QString ps_id = db.processedSampleId(GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName(), false);
 			is_exome = ps_id!="" && db.getProcessedSampleData(ps_id).processing_system_type=="WES";
 		}
 
 		//show dialog
 		RepeatExpansionWidget* widget = new RepeatExpansionWidget(re_file_name, is_exome);
-		auto dlg = GUIHelper::createDialog(widget, "Repeat Expansions of " + processedSampleName());
+		auto dlg = GUIHelper::createDialog(widget, "Repeat Expansions of " + GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName());
 		addModelessDialog(dlg, false);
 	}
 	else
@@ -984,7 +976,7 @@ void MainWindow::on_actionPRS_triggered()
 	if (filename_=="") return;
 
 	// determine PRS file name
-	QString prs_file_name = VersatileFileInfo(filename_).absolutePath() + "/" + processedSampleName() +  "_prs.tsv";
+	QString prs_file_name = GlobalServiceProvider::instance().fileLocationProvider()->getProjectAbsolutePath() + "/" + GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName() +  "_prs.tsv";
 
 	if (VersatileFileInfo(prs_file_name).exists())
 	{
@@ -1008,7 +1000,8 @@ void MainWindow::on_actionDesignCfDNAPanel_triggered()
 	DBTable cfdna_processing_systems = NGSD().createTable("processing_system", "SELECT id, name_short FROM processing_system WHERE type='cfDNA (patient-specific)'");
 
 	QSharedPointer<CfDNAPanelDesignDialog> dialog = QSharedPointer<CfDNAPanelDesignDialog>(new CfDNAPanelDesignDialog(variants_, filter_result_, somatic_report_settings_.report_config,
-																													  processedSampleName(), cfdna_processing_systems, this));
+																													  GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName(),
+																													  cfdna_processing_systems, this));
 	dialog->setWindowFlags(Qt::Window);
 
 	// link IGV
@@ -1031,7 +1024,7 @@ void MainWindow::on_actionShowCfDNAPanel_triggered()
 
 	foreach (const QString& system, processing_systems)
 	{
-		QString file_path = folder + "/" + system + "/" + processedSampleName() + ".bed";
+		QString file_path = folder + "/" + system + "/" + GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName() + ".bed";
 
 		if (VersatileFileInfo(file_path).exists()) bed_files << file_path;
 	}
@@ -1063,8 +1056,8 @@ void MainWindow::on_actionShowCfDNAPanel_triggered()
 	}
 
 	//show dialog
-	CfDNAPanelWidget* widget = new CfDNAPanelWidget(selected_bed_file, processedSampleName());
-	auto dlg = GUIHelper::createDialog(widget, "cfDNA panel for tumor " + processedSampleName());
+	CfDNAPanelWidget* widget = new CfDNAPanelWidget(selected_bed_file, GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName());
+	auto dlg = GUIHelper::createDialog(widget, "cfDNA panel for tumor " + GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName());
 	addModelessDialog(dlg, false);
 }
 
@@ -1073,7 +1066,7 @@ void MainWindow::on_actionCfDNADiseaseCourse_triggered()
 	if (filename_=="") return;
 	if (!somaticReportSupported()) return;
 
-	DiseaseCourseWidget* widget = new DiseaseCourseWidget(processedSampleName());
+	DiseaseCourseWidget* widget = new DiseaseCourseWidget(GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName());
 	auto dlg = GUIHelper::createDialog(widget, "Personalized cfDNA variants");
 
 	// link IGV
@@ -1094,7 +1087,7 @@ void MainWindow::openVariantListFolder()
 {
 	if (filename_=="") return;
 
-	QDesktopServices::openUrl(VersatileFileInfo(filename_).absolutePath());
+	QDesktopServices::openUrl(GlobalServiceProvider::instance().fileLocationProvider()->getProjectAbsolutePath());
 }
 
 void MainWindow::on_actionPublishVariantInLOVD_triggered()
@@ -1480,8 +1473,8 @@ bool MainWindow::initializeIvg(QAbstractSocket& socket)
 	QList<FileLocation> bams = GlobalServiceProvider::instance().fileLocationProvider()->getBamFiles();
 	if (bams.empty())
 	{
-		QString sample_folder = VersatileFileInfo(filename_).absolutePath();
-		QString project_folder = VersatileFileInfo(sample_folder).absolutePath();
+		QString sample_folder = GlobalServiceProvider::instance().fileLocationProvider()->getProjectAbsolutePath();
+		QString project_folder = GlobalServiceProvider::instance().fileLocationProvider()->getProjectParentAbsolutePath();
 		THROW(Exception, "Could not find BAM file at one of the default locations:"+sample_folder+", "+project_folder);
 	}
 
@@ -1681,14 +1674,14 @@ void MainWindow::editVariantValidation(int index)
 		}
 
 		//get sample ID
-		QString sample_id = db.sampleId(processedSampleName());
+		QString sample_id = db.sampleId(GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName());
 
 		//get variant validation ID - add if missing
 		QVariant val_id = db.getValue("SELECT id FROM variant_validation WHERE variant_id='" + variant_id + "' AND sample_id='" + sample_id + "'", true);
 		if (!val_id.isValid())
 		{
 			//get genotype
-			int i_genotype = variants_.getSampleHeader().infoByID(processedSampleName()).column_index;
+			int i_genotype = variants_.getSampleHeader().infoByID(GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName()).column_index;
 			QByteArray genotype = variant.annotations()[i_genotype];
 
 			//insert
@@ -1959,38 +1952,9 @@ QString MainWindow::targetFileName() const
 	return output;
 }
 
-QString MainWindow::processedSampleName()
-{
-	switch(variants_.type())
-	{
-		case GERMLINE_SINGLESAMPLE:
-			return VersatileFileInfo(filename_).baseName();
-			break;
-		case GERMLINE_TRIO: //return index (child)
-			return variants_.getSampleHeader().infoByStatus(true).column_name;
-			break;
-		case GERMLINE_MULTISAMPLE: //return affected if there is exactly one affected
-			try
-			{
-				SampleInfo info = variants_.getSampleHeader().infoByStatus(true);
-				return info.column_name;
-			}
-			catch(...) {} //Nothing to do here
-			break;
-		case SOMATIC_SINGLESAMPLE:
-			return QFileInfo(filename_).baseName();
-			break;
-		case SOMATIC_PAIR:
-			return VersatileFileInfo(filename_).baseName().split("-")[0];
-			break;
-	}
-
-	return "";
-}
-
 QString MainWindow::sampleName()
 {
-	QString ps_name = processedSampleName();
+	QString ps_name = GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName();
 	return (ps_name + "_").split('_')[0];
 }
 
@@ -2024,7 +1988,7 @@ void MainWindow::cleanUpModelessDialogs()
 
 void MainWindow::importPhenotypesFromNGSD()
 {
-	QString ps_name = processedSampleName();
+	QString ps_name = GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName();
 	try
 	{
 		NGSD db;
@@ -2093,7 +2057,10 @@ void MainWindow::openProcessedSampleFromNGSD(QString processed_sample_name, bool
 		QString file;
 		try
 		{
-			file = ApiRequestHandler(Settings::string("server_host"), Settings::integer("server_port")).sendGetRequest("/v1/project_file?ps=" + processed_sample_name);
+			HttpHeaders add_headers;
+			add_headers.insert("Accept", "application/json");
+			file = HttpRequestHandler(HttpRequestHandler::NONE).get("https://" + Settings::string("server_host") + ":" + QString::number(Settings::integer("server_port")) + "/v1/project_file?ps=" + processed_sample_name, add_headers);
+//			file = ApiRequestHandler(Settings::string("server_host"), Settings::integer("server_port")).sendGetRequest("/v1/project_file?ps=" + processed_sample_name);
 		}
 		catch (Exception& e)
 		{
@@ -2474,6 +2441,7 @@ void MainWindow::loadFile(QString filename)
 
 		//load SVs
 		timer.restart();
+		qDebug() << "SV filename" << filename;
 		QString sv_file = svFile(filename);
 
 		if (sv_file!="")
@@ -2726,7 +2694,7 @@ void MainWindow::loadSomaticReportConfig()
 	NGSD db;
 
 	//Determine processed sample ids
-	QString ps_tumor = processedSampleName();
+	QString ps_tumor = GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName();
 	QString ps_tumor_id = db.processedSampleId(ps_tumor, false);
 	if(ps_tumor_id == "") return;
 	QString ps_normal = normalSampleName();
@@ -2787,7 +2755,7 @@ void MainWindow::storeSomaticReportConfig()
 	if(variants_.type() != SOMATIC_PAIR) return;
 
 	NGSD db;
-	QString ps_tumor_id = db.processedSampleId(processedSampleName(), false);
+	QString ps_tumor_id = db.processedSampleId(GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName(), false);
 	QString ps_normal_id = db.processedSampleId(normalSampleName(), false);
 
 	if(ps_tumor_id=="" || ps_normal_id == "")
@@ -2945,7 +2913,7 @@ void MainWindow::showReportConfigInfo()
 	//check if applicable
 	if (!germlineReportSupported() && !somaticReportSupported()) return;
 
-	QString ps = germlineReportSupported() ? germlineReportSample() : processedSampleName();
+	QString ps = germlineReportSupported() ? germlineReportSample() : GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName();
 	QString title = "Report configuration information of " + ps;
 
 	//check sample exists
@@ -3068,7 +3036,7 @@ void MainWindow::generateReportTumorOnly()
 		return;
 	}
 	QString sample_folder = QFileInfo(filename_).absolutePath();
-	QString ps = processedSampleName();
+	QString ps = GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName();
 
 	//get report settings
 	TumorOnlyReportWorkerConfig config;
@@ -3121,12 +3089,12 @@ void MainWindow::generateReportSomaticRTF()
 	somatic_report_settings_.report_config.setFilter((ui_.filters->filterName() != "[none]" ? ui_.filters->filterName() : "") ); //filter name -> goes to NGSD som. rep. conf.
 	somatic_report_settings_.filters = ui_.filters->filters(); //filter cascase -> goes to report helper
 
-	somatic_report_settings_.tumor_ps = processedSampleName();
+	somatic_report_settings_.tumor_ps = GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName();
 	somatic_report_settings_.normal_ps = normalSampleName();
 
 	NGSD db;
 	//Preselect report settings if not already exists to most common values
-	if(db.somaticReportConfigId(db.processedSampleId(processedSampleName()), db.processedSampleId(normalSampleName())) == -1)
+	if(db.somaticReportConfigId(db.processedSampleId(GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName()), db.processedSampleId(normalSampleName())) == -1)
 	{
 		somatic_report_settings_.report_config.setTumContentByMaxSNV(true);
 		somatic_report_settings_.report_config.setTumContentByClonality(true);
@@ -3161,18 +3129,18 @@ void MainWindow::generateReportSomaticRTF()
 	//store somatic report config in NGSD
 	if(!dlg.skipNGSD())
 	{
-		db.setSomaticReportConfig(db.processedSampleId(processedSampleName()), db.processedSampleId(normalSampleName()), somatic_report_settings_.report_config, variants_, cnvs_, somatic_control_tissue_variants_, Helper::userName());
+		db.setSomaticReportConfig(db.processedSampleId(GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName()), db.processedSampleId(normalSampleName()), somatic_report_settings_.report_config, variants_, cnvs_, somatic_control_tissue_variants_, Helper::userName());
 	}
 
 	QString destination_path; //path to rtf file
 	VersatileFileInfo file_info = VersatileFileInfo(filename_);
 	if(dlg.getReportType() == SomaticReportDialog::report_type::DNA)
 	{
-		destination_path = last_report_path_ + "/" + processedSampleName() + "_DNA_report_somatic_" + QDate::currentDate().toString("yyyyMMdd") + ".rtf";
+		destination_path = last_report_path_ + "/" + GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName() + "_DNA_report_somatic_" + QDate::currentDate().toString("yyyyMMdd") + ".rtf";
 	}
 	else
 	{
-		destination_path = last_report_path_ + "/" + dlg.getRNAid() + "-" + processedSampleName() + "_RNA_report_somatic_" + QDate::currentDate().toString("yyyyMMdd") + ".rtf";
+		destination_path = last_report_path_ + "/" + dlg.getRNAid() + "-" + GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName() + "_RNA_report_somatic_" + QDate::currentDate().toString("yyyyMMdd") + ".rtf";
 	}
 
 	//get RTF file name
@@ -3328,11 +3296,11 @@ void MainWindow::generateReportGermline()
 	QString type_suffix = dialog.type().replace(" ", "_") + "s_";
 	QString file_rep = QFileDialog::getSaveFileName(this, "Export report file", last_report_path_ + "/" + ps_name + targetFileName() + "_report_" + trio_suffix + type_suffix + QDate::currentDate().toString("yyyyMMdd") + ".html", "HTML files (*.html);;All files(*.*)");
 	if (file_rep=="") return;
-	last_report_path_ = VersatileFileInfo(file_rep).absolutePath();
+	last_report_path_ = QFileInfo(file_rep).absolutePath();
 
 	//prepare report generation data
 	PrsTable prs_table;
-	QString prs_file = db.processedSamplePath(processed_sample_id, NGSD::SAMPLE_FOLDER) + "/" + ps_name +  "_prs.tsv";
+	QString prs_file = db.processedSamplePath(processed_sample_id, PathType::SAMPLE_FOLDER) + "/" + ps_name +  "_prs.tsv";
 	if (QFile::exists(prs_file)) prs_table.load(prs_file);
 
 	GermlineReportGeneratorData data(ps_name, variants_, cnvs_, svs_, prs_table, report_settings_, ui_.filters->filters(), GSvarHelper::preferredTranscripts());
@@ -3386,7 +3354,7 @@ void MainWindow::openProcessedSampleTabsCurrentSample()
 
 	if (variants_.type()==GERMLINE_SINGLESAMPLE)
 	{
-		openProcessedSampleTab(processedSampleName());
+		openProcessedSampleTab(GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName());
 	}
 	else
 	{
@@ -4106,7 +4074,7 @@ void MainWindow::on_actionGapsLookup_triggered()
 	if (gene=="") return;
 
 	//locate report(s)
-	QString folder = VersatileFileInfo(filename_).absolutePath();
+	QString folder = GlobalServiceProvider::instance().fileLocationProvider()->getProjectAbsolutePath();
 	QList<FileLocation> reports = GlobalServiceProvider::instance().fileLocationProvider()->getLowcovBedFiles();
 
 	//abort if no report is found
@@ -4121,7 +4089,7 @@ void MainWindow::on_actionGapsLookup_triggered()
 	if (LoginManager::active())
 	{
 		NGSD db;
-		QString ps_id = db.processedSampleId(processedSampleName());
+		QString ps_id = db.processedSampleId(GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName());
 		if (ps_id!="")
 		{
 			QString sys_id = db.getValue("SELECT processing_system_id FROM processed_sample WHERE id=:0", true, ps_id).toString();
@@ -4328,7 +4296,7 @@ void MainWindow::exportVCF()
 
 		//store	
 		QString folder = Settings::string("gsvar_variant_export_folder", true).trimmed();
-		if (folder.isEmpty()) folder = VersatileFileInfo(filename_).absolutePath();
+		if (folder.isEmpty()) folder = GlobalServiceProvider::instance().fileLocationProvider()->getProjectAbsolutePath();
 		QString file_name = folder + QDir::separator() + VersatileFileInfo(filename_).fileName().replace(".GSvar", "") + "_export_" + QDate::currentDate().toString("yyyyMMdd") + "_" + Helper::userName() + ".vcf.gz";
 		file_name = QFileDialog::getSaveFileName(this, "Export VCF", file_name, "VCF (*.vcf.gz);;All files (*.*)");
 		if (file_name!="")
@@ -4369,7 +4337,7 @@ void MainWindow::exportGSvar()
 
 		//store
 		QString folder = Settings::string("gsvar_variant_export_folder", true).trimmed();
-		if (folder.isEmpty()) folder = VersatileFileInfo(filename_).absolutePath();
+		if (folder.isEmpty()) folder = GlobalServiceProvider::instance().fileLocationProvider()->getProjectAbsolutePath();
 		QString file_name = folder + QDir::separator() + VersatileFileInfo(filename_).fileName().replace(".GSvar", "") + "_export_" + QDate::currentDate().toString("yyyyMMdd") + "_" + Helper::userName() + ".GSvar";
 		file_name = QFileDialog::getSaveFileName(this, "Export GSvar", file_name, "GSvar (*.gsvar);;All files (*.*)");
 		if (file_name!="")
@@ -4483,7 +4451,7 @@ void MainWindow::uploadtoLovd(int variant_index, int variant_index2)
 	LovdUploadData data;
 
 	//sample name
-	data.processed_sample = processedSampleName();
+	data.processed_sample = GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName();
 
 	//gender
 	NGSD db;
@@ -4788,7 +4756,7 @@ void MainWindow::contextMenuSingleVariant(QPoint pos, int index)
 	if (ngsd_user_logged_in)
 	{
 		NGSD db;
-		QString sample_id = db.sampleId(processedSampleName(), false);
+		QString sample_id = db.sampleId(GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName(), false);
 		if (sample_id!="")
 		{
 			//get disease list (HPO and CGI cancer type)
@@ -5205,7 +5173,7 @@ void MainWindow::on_actionAnnotateSomaticVariantInterpretation_triggered()
 
 QString MainWindow::cnvFile(QString gsvar_file)
 {
-	QString base = VersatileFileInfo(gsvar_file).absolutePath() + QDir::separator() + VersatileFileInfo(gsvar_file).baseName();
+	QString base = GlobalServiceProvider::instance().fileLocationProvider()->getProjectAbsolutePath() + QDir::separator() + VersatileFileInfo(gsvar_file).baseName();
 
 	QString cnv_file = base + "_cnvs_clincnv.tsv";
 	if (!VersatileFileInfo(cnv_file).exists()) //fallback to somatic
@@ -5226,7 +5194,7 @@ QString MainWindow::cnvFile(QString gsvar_file)
 
 QString MainWindow::svFile(QString gsvar_file)
 {
-	QString base = VersatileFileInfo(gsvar_file).absolutePath() + QDir::separator() + VersatileFileInfo(gsvar_file).baseName();
+	QString base = GlobalServiceProvider::instance().fileLocationProvider()->getProjectAbsolutePath() + QDir::separator() + VersatileFileInfo(gsvar_file).baseName();
 
 	QString sv_file = base + "_manta_var_structural.bedpe"; //germline file naming convention
 
@@ -5596,7 +5564,7 @@ void MainWindow::variantRanking()
 {
 	QApplication::setOverrideCursor(Qt::BusyCursor);
 
-	QString ps_name = processedSampleName();
+	QString ps_name = GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName();
 	try
 	{
 		NGSD db;
@@ -5660,7 +5628,7 @@ void MainWindow::clearSomaticReportSettings(QString ps_id_in_other_widget)
 {
 	if(!LoginManager::active()) return;
 
-	QString this_ps_id = NGSD().processedSampleId(processedSampleName(),false);
+	QString this_ps_id = NGSD().processedSampleId(GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName(),false);
 	if(this_ps_id == "") return;
 
 	if(this_ps_id != ps_id_in_other_widget) return; //skip if ps id of file is different than in other widget
@@ -5673,96 +5641,19 @@ QList<FileLocation> MainWindow::getSegFilesCnv()
 	return GlobalServiceProvider::instance().fileLocationsProvider()->getSegFilesCnv();
 }
 
-QList<IgvFile> MainWindow::getIgvFilesBaf()
-{
-	QList<IgvFile> output;
-
-	if (variants_.type()==SOMATIC_PAIR)
-	{
-		QString segfile = filename_.left(filename_.length()-6) + "_bafs.igv";
-		QString pair = QFileInfo(filename_).baseName();
-		output << IgvFile{pair, "BAF" , segfile};
-	}
-	else
-	{
-		QList<IgvFile> tmp = getBamFiles();
-		foreach(const IgvFile& file, tmp)
-		{
-			QString segfile = file.filename.left(file.filename.length()-4) + "_bafs.igv";
-			if (QFile::exists(segfile))
-			{
-				output << IgvFile{file.id, "BAF" , segfile};
-			}
-		}
-	}
-
-	return output;
-}
-
 QList<FileLocation> MainWindow::getIgvFilesBaf()
 {
 	return GlobalServiceProvider::instance().fileLocationProvider()->getIgvFilesBaf();
 }
 
 QList<FileLocation> MainWindow::getMantaEvidenceFiles()
-{	
-	QList<FileLocation> evidence_files;
-
-	// search at location of all available BAM files
-		QList<FileLocation> bam_files = GlobalServiceProvider::instance().fileLocationProvider()->getBamFiles();
-	foreach (FileLocation bam_file, bam_files)
-	{
-		QString evidence_bam_file = GSvarHelper::getEvidenceFile(bam_file.filename);
-
-		// check if evidence file exists
-		if (!VersatileFileInfo(evidence_bam_file).exists()) continue;
-
-		FileLocation evidence_file;
-		evidence_file.filename = evidence_bam_file;
-		evidence_file.type = PathType::BAM;
-		evidence_file.id = VersatileFileInfo(evidence_bam_file).baseName();
-		evidence_files.append(evidence_file);
-	}
-    return evidence_files;
+{		
+	return GlobalServiceProvider::instance().fileLocationProvider()->getMantaEvidenceFiles();
 }
-
-QList<IgvFile> MainWindow::getLowCovFiles()
-{
-	QList<IgvFile> output;
-
-	if (variants_.type()==SOMATIC_PAIR)
-	{
-		//search in analysis folder
-		QString folder = VersatileFileInfo(filename_).absolutePath();
-		QStringList beds = Helper::findFiles(folder, "*_stat_lowcov.bed", false);
-		foreach(const QString& bed, beds)
-		{
-			FileLocation	file;
-			file.id = VersatileFileInfo(bed).fileName().replace("_stat_lowcov.bed", "") + " (low-coverage regions)";
-			file.type = PathType::COPY_NUMBER_CALLS;
-			file.filename = bed;
-			output.append(file);
-		}
-	}
-	else
-	{
-		// search in sample folders containing BAM files
-		foreach (const FileLocation& bam_file, GlobalServiceProvider::instance().fileLocationProvider()->getBamFiles())
-		{
-			QString folder = VersatileFileInfo(bam_file.filename).absolutePath();
-			QStringList beds = Helper::findFiles(folder, "*_lowcov.bed", false);
-
-			foreach(const QString& bed, beds)
-			{
-                                FileLocation file;
-				file.id = bam_file.id + " (low-coverage regions)";
-                                file.type = PathType::COPY_NUMBER_CALLS;
-				file.filename = bed;
-				output.append(file);
-			}
-		}
-	}
-	return output;
+	
+QList<FileLocation> MainWindow::getLowCovFiles()
+{	
+	return GlobalServiceProvider::instance().fileLocationProvider()->getStatLowcovBedFiles();
 }
 
 void MainWindow::applyFilters(bool debug_time)

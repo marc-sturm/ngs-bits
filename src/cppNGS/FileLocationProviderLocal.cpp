@@ -148,36 +148,32 @@ QList<FileLocation> FileLocationProviderLocal::getAnalysisLogFiles()
 }
 
 QList<FileLocation> FileLocationProviderLocal::getCircosPlotFiles()
-{
-	QString path = QFileInfo(gsvar_file_).absolutePath();
-	QStringList files = Helper::findFiles(path, "*_circos.png", false);
+{	
+	QStringList files = Helper::findFiles(getProjectAbsolutePath(), "*_circos.png", false);
 	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::CIRCOS_PLOT);
 
 	return output;
 }
 
 QList<FileLocation> FileLocationProviderLocal::getVcfGzFiles()
-{
-	QString folder = QFileInfo(gsvar_file_).absolutePath();
-	QStringList files = Helper::findFiles(folder, "*_var_annotated.vcf.gz", false);
+{	
+	QStringList files = Helper::findFiles(getProjectAbsolutePath(), "*_var_annotated.vcf.gz", false);
 	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::VCF_GZ);
 
 	return output;
 }
 
 QList<FileLocation> FileLocationProviderLocal::getExpansionhunterVcfFiles()
-{
-	QString path = QFileInfo(gsvar_file_).absolutePath();
-	QStringList files = Helper::findFiles(path, processedSampleName() + "_repeats_expansionhunter.vcf", false);
+{	
+	QStringList files = Helper::findFiles(getProjectAbsolutePath(), processedSampleName() + "_repeats_expansionhunter.vcf", false);
 	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::REPEATS_EXPANSION_HUNTER_VCF);
 
 	return output;
 }
 
 QList<FileLocation> FileLocationProviderLocal::getPrsTsvFiles()
-{
-	QString path = QFileInfo(gsvar_file_).absolutePath();
-	QStringList files = Helper::findFiles(path, processedSampleName() + "_prs.tsv", false);
+{	
+	QStringList files = Helper::findFiles(getProjectAbsolutePath(), processedSampleName() + "_prs.tsv", false);
 	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::PRS_TSV);
 
 	return output;
@@ -185,19 +181,127 @@ QList<FileLocation> FileLocationProviderLocal::getPrsTsvFiles()
 
 QList<FileLocation> FileLocationProviderLocal::getClincnvTsvFiles()
 {
-	QStringList files = Helper::findFiles(QFileInfo(gsvar_file_).absolutePath(), "*_clincnv.tsv", false);
+	QStringList files = Helper::findFiles(getProjectAbsolutePath(), "*_clincnv.tsv", false);
 	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::CLINCNV_TSV);
 
 	return output;
 }
 
 QList<FileLocation> FileLocationProviderLocal::getLowcovBedFiles()
-{
-	QString folder = QFileInfo(gsvar_file_).absolutePath();
-	QStringList files = Helper::findFiles(folder, "*_lowcov.bed", false);
+{	
+	QStringList files = Helper::findFiles(getProjectAbsolutePath(), "*_lowcov.bed", false);
 	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::LOWCOV_BED);
 
 	return output;
+}
+
+QList<FileLocation> FileLocationProviderLocal::getStatLowcovBedFiles()
+{
+	QList<FileLocation> output {};
+
+	if (analysis_type_==SOMATIC_PAIR)
+	{
+		//search in analysis folder
+		QStringList beds = Helper::findFiles(getProjectAbsolutePath(), "*_stat_lowcov.bed", false);
+		foreach(const QString& bed, beds)
+		{
+			FileLocation file;
+			file.id = QFileInfo(bed).fileName().replace("_stat_lowcov.bed", "") + " (low-coverage regions)";
+			file.type = PathType::COPY_NUMBER_CALLS;
+			file.filename = bed;
+			output.append(file);
+		}
+	}
+	else
+	{
+		// search in sample folders containing BAM files
+		foreach (const FileLocation& bam_file, getBamFiles())
+		{
+			QString folder = QFileInfo(bam_file.filename).absolutePath();
+			QStringList beds = Helper::findFiles(folder, "*_lowcov.bed", false);
+
+			foreach(const QString& bed, beds)
+			{
+				FileLocation file;
+				file.id = bam_file.id + " (low-coverage regions)";
+				file.type = PathType::COPY_NUMBER_CALLS;
+				file.filename = bed;
+				output.append(file);
+			}
+		}
+	}
+
+	return output;
+}
+
+QList<FileLocation> FileLocationProviderLocal::getCnvsClincnvSegFiles()
+{
+	QStringList files = Helper::findFiles(getProjectAbsolutePath(), "*_cnvs_clincnv.seg", false);
+	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::CNVS_CLINCNV_SEG);
+
+	return output;
+}
+
+QList<FileLocation> FileLocationProviderLocal::getCnvsClincnvTsvFiles()
+{
+	QStringList files = Helper::findFiles(getProjectAbsolutePath(), "*_cnvs_clincnv.tsv", false);
+	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::CNVS_CLINCNV_TSV);
+
+	return output;
+}
+
+QList<FileLocation> FileLocationProviderLocal::getCnvsSegFiles()
+{
+	QStringList files = Helper::findFiles(getProjectAbsolutePath(), "*_cnvs.seg", false);
+	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::CNVS_SEG);
+
+	return output;
+}
+
+QList<FileLocation> FileLocationProviderLocal::getCnvsTsvFiles()
+{
+	QStringList files = Helper::findFiles(getProjectAbsolutePath(), "*_cnvs.tsv", false);
+	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::CNVS_TSV);
+
+	return output;
+}
+
+QList<FileLocation> FileLocationProviderLocal::getRohsTsvFiles()
+{
+	QString filename = gsvar_file_;
+	if (analysis_type_==GERMLINE_TRIO)
+	{
+		QString child = header_info_.infoByStatus(true).column_name;
+		filename = QFileInfo(gsvar_file_).absolutePath() + "/Sample_" + child + "/" + child + ".GSvar";
+	}
+	QString folder = QFileInfo(filename).absolutePath();
+	QStringList files = Helper::findFiles(folder, "*_rohs.tsv", false);
+	QList<FileLocation> output = mapFoundFilesToFileLocation(files, PathType::ROHS_TSV);
+
+	return output;
+}
+
+QString FileLocationProviderLocal::getProjectAbsolutePath()
+{
+	return QFileInfo(gsvar_file_).absolutePath();
+}
+
+QString FileLocationProviderLocal::getProjectParentAbsolutePath()
+{
+	QDir directory = QFileInfo(gsvar_file_).dir();
+	directory.cdUp();
+	return directory.absolutePath();
+}
+
+QString FileLocationProviderLocal::getRohFileAbsolutePath()
+{
+	QString filename = gsvar_file_;
+	if (analysis_type_==GERMLINE_TRIO)
+	{
+		QString child = header_info_.infoByStatus(true).column_name;
+		filename = getProjectAbsolutePath() + "/Sample_" + child + "/" + child + ".GSvar";
+	}
+	return QFileInfo(filename).absolutePath();
 }
 
 QString FileLocationProviderLocal::processedSampleName()

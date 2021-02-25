@@ -3,6 +3,7 @@
 
 #include "cppNGS_global.h"
 #include "FileLocationProvider.h"
+#include <QDir>
 
 class CPPNGSSHARED_EXPORT FileLocationProviderLocal : virtual public FileLocationProvider
 {
@@ -22,8 +23,18 @@ public:
 	QList<FileLocation> getPrsTsvFiles() override;
 	QList<FileLocation> getClincnvTsvFiles() override;
 	QList<FileLocation> getLowcovBedFiles() override;
+	QList<FileLocation> getStatLowcovBedFiles() override;
+	QList<FileLocation> getCnvsClincnvSegFiles() override;
+	QList<FileLocation> getCnvsClincnvTsvFiles() override;
+	QList<FileLocation> getCnvsSegFiles() override;
+	QList<FileLocation> getCnvsTsvFiles() override;
+	QList<FileLocation> getRohsTsvFiles() override;
 
-	QString processedSampleName();
+	QString getProjectAbsolutePath() override;
+	QString getProjectParentAbsolutePath() override;
+	QString getRohFileAbsolutePath() override;
+
+	QString processedSampleName() override;
 
 private:
 	QList<FileLocation> mapFoundFilesToFileLocation(QStringList& files, PathType type);

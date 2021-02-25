@@ -1,4 +1,5 @@
 #include "FileLocationProviderRemote.h"
+#include "HttpRequestHandler.h"
 
 FileLocationProviderRemote::FileLocationProviderRemote(const QString sample_id,const QString server_host, const int server_port)
 	: sample_id_(sample_id)
@@ -16,7 +17,10 @@ QList<FileLocation> FileLocationProviderRemote::requestFileInfoByType(PathType t
 		return output;
 	}
 
-	QString reply = ApiRequestHandler(server_host_, server_port_).sendGetRequest("/v1/file_location?ps=" + sample_id_ + "&type=" + FileLocationHelper::pathTypeToString(type));
+	HttpHeaders add_headers;
+	add_headers.insert("Accept", "application/json");
+	QString reply = HttpRequestHandler(HttpRequestHandler::NONE).get("https://" + server_host_ + ":" + QString::number(server_port_) + "/v1/file_location?ps=" + sample_id_ + "&type=" + FileLocationHelper::pathTypeToString(type), add_headers);
+
 	QJsonDocument json_doc = QJsonDocument::fromJson(reply.toLatin1());
 	QJsonArray file_list = json_doc.array();
 
@@ -103,4 +107,54 @@ QList<FileLocation> FileLocationProviderRemote::getClincnvTsvFiles()
 QList<FileLocation> FileLocationProviderRemote::getLowcovBedFiles()
 {
 	return QList<FileLocation>{};
+}
+
+QList<FileLocation> FileLocationProviderRemote::getStatLowcovBedFiles()
+{
+	return QList<FileLocation>{};
+}
+
+QList<FileLocation> FileLocationProviderRemote::getCnvsClincnvSegFiles()
+{
+	return QList<FileLocation>{};
+}
+
+QList<FileLocation> FileLocationProviderRemote::getCnvsClincnvTsvFiles()
+{
+	return QList<FileLocation>{};
+}
+
+QList<FileLocation> FileLocationProviderRemote::getCnvsSegFiles()
+{
+	return QList<FileLocation>{};
+}
+
+QList<FileLocation> FileLocationProviderRemote::getCnvsTsvFiles()
+{
+	return QList<FileLocation>{};
+}
+
+QList<FileLocation> FileLocationProviderRemote::getRohsTsvFiles()
+{
+	return QList<FileLocation>{};
+}
+
+QString FileLocationProviderRemote::getProjectAbsolutePath()
+{
+	return "";
+}
+
+QString FileLocationProviderRemote::getProjectParentAbsolutePath()
+{
+	return "";
+}
+
+QString FileLocationProviderRemote::getRohFileAbsolutePath()
+{
+	return "";
+}
+
+QString FileLocationProviderRemote::processedSampleName()
+{
+	return "";
 }

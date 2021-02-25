@@ -22,11 +22,24 @@ public:
 	virtual QList<FileLocation> getAnalysisLogFiles() = 0;
 	virtual QList<FileLocation> getCircosPlotFiles() = 0;
 	virtual QList<FileLocation> getVcfGzFiles() = 0;
+
 	virtual QList<FileLocation> getExpansionhunterVcfFiles() = 0;
+
 	virtual QList<FileLocation> getPrsTsvFiles() = 0;
 	virtual QList<FileLocation> getClincnvTsvFiles() = 0;
 	virtual QList<FileLocation> getLowcovBedFiles() = 0;
+	virtual QList<FileLocation> getStatLowcovBedFiles() = 0;
+	virtual QList<FileLocation> getCnvsClincnvSegFiles() = 0;
+	virtual QList<FileLocation> getCnvsClincnvTsvFiles() = 0;
+	virtual QList<FileLocation> getCnvsSegFiles() = 0;
+	virtual QList<FileLocation> getCnvsTsvFiles() = 0;
+	virtual QList<FileLocation> getRohsTsvFiles() = 0;
 
+	virtual QString getProjectAbsolutePath() = 0;
+	virtual QString getProjectParentAbsolutePath() = 0;
+	virtual QString getRohFileAbsolutePath() = 0;
+
+	virtual QString processedSampleName() = 0;
 private:
 	VariantList variants;
 	QString filename;

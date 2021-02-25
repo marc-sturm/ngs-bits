@@ -31,6 +31,8 @@ enum class PathType
 	VCF_GZ, // *_var_annotated.vcf.gz
 	REPEATS_EXPANSION_HUNTER_VCF, // *_repeats_expansionhunter.vcf
 	FASTQ_GZ, // *.fastq.gz
+	CNVS_CLINCNV_SEG, // *_cnvs_clincnv.seg
+	CNVS_SEG, // *_cnvs.seg
 
 	OTHER // everything else
 };

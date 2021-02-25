@@ -196,18 +196,6 @@ void GSvarHelper::colorGeneItem(QTableWidgetItem* item, const GeneSet& genes)
 	}
 }
 
-QString GSvarHelper::getEvidenceFile(const QString& bam_file)
-{
-	if (!bam_file.endsWith(".bam", Qt::CaseInsensitive))
-	{
-		THROW(ArgumentException, "Invalid BAM file path \"" + bam_file + "\"!");
-	}
-	VersatileFileInfo bam_file_info(bam_file);
-	QDir evidence_dir(bam_file_info.absolutePath() + "/manta_evid/");
-	QString ps_name = bam_file_info.fileName().left(bam_file_info.fileName().length() - 4);
-	return evidence_dir.absoluteFilePath(ps_name + "_manta_evidence.bam");
-}
-
 BedLine GSvarHelper::liftOver(const Chromosome& chr, int start, int end)
 {
 	//call lift-over webservice
