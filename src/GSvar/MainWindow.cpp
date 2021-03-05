@@ -721,7 +721,7 @@ void MainWindow::on_actionSV_triggered()
 			list = new SvWidget(svs_, ps_id, ui_.filters, report_config, het_hit_genes, gene2region_cache_, this);
 		}
 
-		auto dlg = GUIHelper::createDialog(list, "Structural variants of " + processedSampleName());
+		auto dlg = GUIHelper::createDialog(list, "Structural variants of " + GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName());
 		connect(list,SIGNAL(openInIGV(QString)),this,SLOT(openInIGV(QString)));
 		connect(list,SIGNAL(openGeneTab(QString)),this,SLOT(openGeneTab(QString)));
 		addModelessDialog(dlg);
@@ -1532,7 +1532,7 @@ bool MainWindow::initializeIvg(QAbstractSocket& socket)
 	try
 	{
 		NGSD db;
-		ProcessingSystemData system_data = db.getProcessingSystemData(db.processingSystemIdFromProcessedSample(processedSampleName()));
+		ProcessingSystemData system_data = db.getProcessingSystemData(db.processingSystemIdFromProcessedSample(GlobalServiceProvider::instance().fileLocationProvider()->processedSampleName()));
 		QString amplicons = system_data.target_amplicon_file;
 		if (amplicons!="")
 		{
@@ -2735,7 +2735,7 @@ void MainWindow::loadSomaticReportConfig()
 	//Preselect target region bed file in NGSD
 	if(somatic_report_settings_.report_config.targetFile() != "")
 	{
-		QString full_path = db.getTargetFilePath(true, true) + "/" + somatic_report_settings_.report_config.targetFile();		
+		QString full_path = db.getTargetFilePath(true) + "/" + somatic_report_settings_.report_config.targetFile();
 		if(VersatileFileInfo(full_path).exists()) ui_.filters->setTargetRegion(full_path);
 	}
 
@@ -5638,7 +5638,7 @@ void MainWindow::clearSomaticReportSettings(QString ps_id_in_other_widget)
 
 QList<FileLocation> MainWindow::getSegFilesCnv()
 {
-	return GlobalServiceProvider::instance().fileLocationsProvider()->getSegFilesCnv();
+	return GlobalServiceProvider::instance().fileLocationProvider()->getSegFilesCnv();
 }
 
 QList<FileLocation> MainWindow::getIgvFilesBaf()

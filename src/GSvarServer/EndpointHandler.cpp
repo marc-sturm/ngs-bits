@@ -50,13 +50,13 @@ QString EndpointHandler::getGSvarFile(QString sample_name, bool search_multi)
 		QString normal_sample = db.normalSample(processed_sample_id);
 		if (normal_sample!="")
 		{
-			analyses << db.secondaryAnalyses(sample_name + "-" + normal_sample, "somatic", true);
+			analyses << db.secondaryAnalyses(sample_name + "-" + normal_sample, "somatic");
 		}
 		//check for germline trio/multi analyses
 		else if (search_multi)
 		{
-			analyses << db.secondaryAnalyses(sample_name, "trio", true);
-			analyses << db.secondaryAnalyses(sample_name, "multi sample", true);
+			analyses << db.secondaryAnalyses(sample_name, "trio");
+			analyses << db.secondaryAnalyses(sample_name, "multi sample");
 		}
 
 		//determine analysis to load

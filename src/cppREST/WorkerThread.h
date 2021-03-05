@@ -6,11 +6,8 @@
 #include <QFile>
 #include <QDebug>
 #include <QDir>
-#include "Exceptions.h"
 #include "WebEntity.h"
-#include "FileCache.h"
-#include "NGSD.h"
-#include "SessionManager.h"
+#include "EndpointManager.h"
 
 class CPPRESTSHARED_EXPORT WorkerThread : public QThread
 {
