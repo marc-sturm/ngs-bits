@@ -43,7 +43,7 @@ OntologyTermCollection::OntologyTermCollection()
 
 OntologyTermCollection::OntologyTermCollection(QString filename, bool skip_obsolete_terms)
 {
-	QSharedPointer<VersatileFile> fp = Helper::openVersatileFileForReading(filename);
+	QSharedPointer<QFile> fp = Helper::openFileForReading(filename);
 
 	while(!fp->atEnd())
 	{
