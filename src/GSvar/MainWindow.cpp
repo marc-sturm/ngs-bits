@@ -2706,7 +2706,7 @@ void MainWindow::loadSomaticReportConfig()
 	somatic_report_settings_.tumor_ps = ps_tumor;
 	somatic_report_settings_.normal_ps = ps_normal;
 
-	somatic_report_settings_.sample_dir = VersatileFileInfo(filename_).dirAbsolutePath();
+	somatic_report_settings_.sample_dir = QFileInfo(filename_).absolutePath();
 
 	try //load normal sample
 	{
