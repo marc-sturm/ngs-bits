@@ -683,7 +683,6 @@ void VariantList::loadInternal(QString filename, const BedFile* roi, bool invert
 	clear();
 
 	//parse from stream
-//	QSharedPointer<QFile> file = Helper::openFileForReading(filename, true);
 	QSharedPointer<VersatileFile> file = Helper::openVersatileFileForReading(filename, true);
 
 	int filter_index = -1;

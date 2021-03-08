@@ -57,8 +57,7 @@ class CPPRESTSHARED_EXPORT EndpointManager
 public:
 	static ParamProps::ParamType getParamTypeFromString(QString in);	
 	static void validateInputData(Endpoint* current_endpoint, Request request);
-	static void appendEndpoint(Endpoint new_endpoint);
-	static void initialize();
+	static void appendEndpoint(Endpoint new_endpoint);	
 	static QString generateGlobalHelp();
 	static QString generateEntityHelp(QString path, Request::MethodType method);
 

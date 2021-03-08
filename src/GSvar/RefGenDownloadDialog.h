@@ -9,6 +9,7 @@
 #include "Settings.h"
 #include "HttpHandler.h"
 #include "HttpRequestHandler.h"
+#include "GSvarHelper.h"
 
 class RefGenDownloadDialog
 	: public QDialog
@@ -27,7 +28,6 @@ private:
 	bool is_interrupted_;
 	void closeEvent(QCloseEvent *bar);
 	void keyPressEvent(QKeyEvent *e);
-	bool isGenomeFound();
 };
 
 #endif // REFGENDOWNLOADDIALOG_H

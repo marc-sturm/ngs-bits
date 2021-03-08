@@ -5,6 +5,9 @@
 #include "BedFile.h"
 #include "VariantList.h"
 #include <QTableWidgetItem>
+#include "Settings.h"
+#include "HttpHandler.h"
+#include "HttpRequestHandler.h"
 
 ///Helper class for GSvar
 class GSvarHelper
@@ -34,6 +37,9 @@ public:
 
 	//Returns gnomAD link for a variant
 	static QString gnomaADLink(const Variant& v);
+
+	//Checks if the reference genome is available on the local machine
+	static bool isGenomeFound();
 
 protected:
 	GSvarHelper() = delete;

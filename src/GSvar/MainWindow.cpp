@@ -239,9 +239,6 @@ void MainWindow::on_actionDebug_triggered()
 {
 	qDebug() << "Debug session";
 
-	RefGenDownloadDialog dlg(this);
-	dlg.exec();
-
 	QString user = Helper::userName();
 	if (user=="ahsturm1")
 	{
@@ -1377,6 +1374,13 @@ void MainWindow::delayedInitialization()
 		{
 			LoginManager::login(dlg.userName());
 		}
+	}
+
+	//check if the reference genome is available
+	if (!GSvarHelper::isGenomeFound())
+	{
+		RefGenDownloadDialog refGenDlg(this);
+		refGenDlg.exec();
 	}
 
 	//init GUI

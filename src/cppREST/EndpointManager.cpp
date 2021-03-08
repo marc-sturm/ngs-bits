@@ -70,64 +70,6 @@ void EndpointManager::appendEndpoint(Endpoint new_endpoint)
 	}
 }
 
-void EndpointManager::initialize()
-{
-//	appendEndpoint(Endpoint{"", QMap<QString, ParamProps>{}, Request::MethodType::GET, WebEntity::ContentType::TEXT_HTML, "Index page with general information"});
-//	appendEndpoint(Endpoint{"info", QMap<QString, ParamProps>{}, Request::MethodType::GET, WebEntity::ContentType::APPLICATION_JSON, "General information about this API"});
-//	appendEndpoint(Endpoint{
-//					   "static",
-//					   QMap<QString, ParamProps>{
-//						   {"filename", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::PATH_PARAM, false, "Name of the file to be served"}}
-//					   },
-//					   Request::MethodType::GET,
-//					   WebEntity::ContentType::TEXT_HTML,
-//					   "Static content served from the server root folder (defined in the config file)",
-
-//				   });
-
-//	appendEndpoint(Endpoint{
-//					   "help",
-//					   QMap<QString, ParamProps>{
-//						   {"endpoint", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::PATH_PARAM, true,
-//												   "Endpoint path the help is requested for. Help for all endpoints wiil be provided, if this parameter is ommited"}}
-//					   },
-//					   Request::MethodType::GET,
-//					   WebEntity::ContentType::TEXT_HTML,
-//					   "Help page on the usage of the endpoints"
-//					});
-
-//	appendEndpoint(Endpoint{
-//					   "file_location",
-//					   QMap<QString, ParamProps> {
-//						   {"ps", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::GET_URL_PARAM, false, "Sample id"}},
-//						   {"type", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::GET_URL_PARAM, true, "Format of the requested file(s)"}}
-//					   },
-//					   Request::MethodType::GET,
-//					   WebEntity::ContentType::APPLICATION_JSON,
-//					   "Retrieve file location information for scecific file types"
-//					});
-
-//	appendEndpoint(Endpoint{
-//					   "login",
-//					   QMap<QString, ParamProps>{
-//							{"name", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::POST_URL_ENCODED, false, "User name"}},
-//							{"password", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::POST_URL_ENCODED, false, "Password"}}
-//					   },
-//					   Request::MethodType::POST,
-//					   WebEntity::ContentType::TEXT_PLAIN,
-//					   "Secure token generation, the token will be used to access protected resources and to perform  certain API calls"
-//					});
-//	appendEndpoint(Endpoint{
-//					   "logout",
-//					   QMap<QString, ParamProps>{
-//							{"token", ParamProps{ParamProps::ParamType::STRING, ParamProps::ParamCategory::POST_URL_ENCODED, false, "Secure token received after a successful login"}}
-//					   },
-//					   Request::MethodType::POST,
-//					   WebEntity::ContentType::TEXT_PLAIN,
-//					   "Secure token invalidation, after this step the token cannot longer be used"
-//					});
-}
-
 QString EndpointManager::generateGlobalHelp()
 {
 	return getEndpointHelpTemplate(&instance().endpoint_registry_);

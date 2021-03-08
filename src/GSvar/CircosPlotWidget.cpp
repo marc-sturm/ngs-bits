@@ -4,7 +4,7 @@
 #include "GlobalServiceProvider.h"
 
 
-CircosPlotWidget::CircosPlotWidget(QWidget *parent) // TODO: remove filename
+CircosPlotWidget::CircosPlotWidget(QWidget *parent)
 	: QWidget(parent)
 	, ui_(new Ui::CircosPlotWidget)
 {
