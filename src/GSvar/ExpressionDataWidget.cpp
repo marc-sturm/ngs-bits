@@ -116,7 +116,7 @@ void ExpressionDataWidget::loadExpressionData()
 {
 	//load TSV file
 	TsvFile expression_data;
-	VersatileFile versatile_file(tsv_filename_, false);
+	VersatileFile versatile_file(tsv_filename_);
 	while (!versatile_file.atEnd())
 	{
 		QString line = versatile_file.readLine().trimmed();
